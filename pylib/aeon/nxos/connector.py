@@ -51,11 +51,17 @@ class NxosRequest(object):
         self.__dict__['params'] = copy(self.DEFAULTS)
 
     def send(self, api, timeout=None):
+        _timeout = timeout if timeout is not None else api.DEFAULT_TIMEOUT
         try:
             resp = requests.post(
                 api.api_url, headers=api.api_headers,
-                timeout=timeout or api.DEFAULT_TIMEOUT,
+                timeout=_timeout,
                 auth=api.api_auth, data=str(self))
+
+        except requests.exceptions.ReadTimeout as exc:
+            cmd_exc = exceptions.TimeoutError(exc)
+            cmd_exc.timeout = timeout
+            raise cmd_exc
 
         except Exception as exc:
             raise NxosExc.RequestError(exc)

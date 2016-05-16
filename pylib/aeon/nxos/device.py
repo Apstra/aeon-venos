@@ -79,10 +79,10 @@ class NxosDevice(object):
         # if the named addon module does not exist, this will raise
         # an ImportError.  We might want to catch this and handle differently
 
-        mod = importlib.import_module('.addons.%s' % item, package=__package__)
+        mod = importlib.import_module('.autoload.%s' % item, package=__package__)
 
         def wrapper(*vargs, **kvargs):
-            cls = getattr(mod, item.capitalize())
+            cls = getattr(mod, '_%s' % item)
             self.__dict__[item] = cls(self, *vargs, **kvargs)
 
         return wrapper

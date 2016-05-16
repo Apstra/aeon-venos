@@ -4,3 +4,6 @@ class ProbeError(Exception):
 class UnauthorizedError(Exception):
     pass
 
+class TimeoutError(Exception):
+    pass
+

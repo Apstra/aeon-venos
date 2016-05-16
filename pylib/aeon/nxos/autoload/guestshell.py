@@ -2,10 +2,10 @@ from collections import namedtuple
 import time
 import logging
 from functools import partial
-from aeon.nxos.exceptions import *
+from aeon.nxos.exceptions import CommandError
 
 
-class Guestshell(object):
+class _guestshell(object):
     GUESTSHELL_CPU = 6
     GUESTSHELL_DISK = 1024
     GUESTSHELL_MEMORY = 3072
@@ -22,7 +22,7 @@ class Guestshell(object):
         self.log = log or logging.getLogger()
 
         self.sz_has = None
-        self.sz_need = Guestshell.Resources(
+        self.sz_need = _guestshell.Resources(
             cpu=cpu, memory=memory, disk=disk)
 
         self._state = None
@@ -133,7 +133,7 @@ class Guestshell(object):
         sz_disk = int(got['disk_reservation'])
         sz_memory = int(got['memory_reservation'])
 
-        self.sz_has = Guestshell.Resources(
+        self.sz_has = _guestshell.Resources(
             cpu=sz_cpu, memory=sz_memory, disk=sz_disk)
 
     def _wait_state(self, state, timeout=60, interval=1, retry=0):
