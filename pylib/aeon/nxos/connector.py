@@ -67,12 +67,12 @@ class NxosRequest(object):
             raise NxosExc.RequestError(exc)
 
         if 401 == resp.status_code:
-            cmd_exc = exceptions.UnauthorizedError
+            cmd_exc = exceptions.UnauthorizedError()
             cmd_exc.message = 'not authorized'
             raise cmd_exc
 
         if 200 != resp.status_code:
-            cmd_exc = NxosExc.CommandError
+            cmd_exc = NxosExc.CommandError()
             cmd_exc.errorcode = resp.status_code
             cmd_exc.message = "command failed, http_code={0} http_reason={1}".format(
                 resp.status_code, resp.reason)
