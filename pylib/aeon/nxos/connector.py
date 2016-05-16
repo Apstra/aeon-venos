@@ -5,7 +5,7 @@ from requests.auth import HTTPBasicAuth
 from copy import copy
 
 import socket
-from aosxtools.proxyagents.nxos import exceptions as NxosExc
+from aeon.nxos import exceptions as NxosExc
 
 _RE_CONF = re.compile(r"\n\n?\s*")
 

@@ -3,9 +3,9 @@ from functools import partial
 import importlib
 import types
 
-from aosxtools.utils.probe import probe
-from aosxtools.proxyagents.nxos.connector import NxosConnector as Connector
-from aosxtools.proxyagents.nxos import exceptions as NxosExc
+from aeon.utils.probe import probe
+from aeon.nxos.connector import NxosConnector as Connector
+from aeon.nxos import exceptions as NxosExc
 
 
 __all__ = ['NxosDevice']
@@ -15,6 +15,12 @@ class NxosDevice(object):
     DEFAULT_PROBE_TIMEOUT = 3
 
     def __init__(self, target, **kwargs):
+        """
+        :param target: hostname or ipaddr of target device
+        :param kwargs:
+            'user' : login user-name, defaults to "admin"
+            'passwd': login password, defaults to "admin
+        """
         self.target = target
 
         user = kwargs.get('user', 'admin')
@@ -24,12 +30,11 @@ class NxosDevice(object):
 
         self.facts = {}
 
-        if not 'no_probe' in kwargs:
+        if 'no_probe' not in kwargs:
             self.probe(**kwargs)
 
-        if not 'no_gather_facts' in kwargs:
+        if 'no_gather_facts' not in kwargs:
             self.gather_facts()
-
 
     def probe(self, **kwargs):
         timeout = kwargs.get('timeout') or self.DEFAULT_PROBE_TIMEOUT
@@ -54,22 +59,22 @@ class NxosDevice(object):
         facts['hostname'], _, facts['domain_name'] = facts['fqdn'].partition('.')
 
         got = exec_show('show hardware')
-        facts['version'] = got['kickstart_ver_str']
+        facts['os_version'] = got['kickstart_ver_str']
         facts['chassis_id'] = got['chassis_id']
         facts['virtual'] = bool('NX-OSv' in facts['chassis_id'])
 
         row = got['TABLE_slot']['ROW_slot']['TABLE_slot_info']['ROW_slot_info'][0]
-        facts['model'] = row['model_num']
         facts['serial_number'] = row['serial_num']
-        facts['part_number'] = row['part_num']
-        facts['part_version'] = row['part_revision']
+        facts['hw_model'] = row['model_num']
+        facts['hw_part_number'] = row['part_num']
+        facts['hw_part_version'] = row['part_revision']
         facts['hw_version'] = row['hw_ver']
 
     def __getattr__(self, item):
-        ###
-        ### this is rather perhaps being a bit "too clever", but I sometimes
-        ### can't help myself ;-P
-        ###
+        # ##
+        # ## this is rather perhaps being a bit "too clever", but I sometimes
+        # ## can't help myself ;-P
+        # ##
 
         # if the named addon module does not exist, this will raise
         # an ImportError.  We might want to catch this and handle differently
@@ -81,6 +86,3 @@ class NxosDevice(object):
             self.__dict__[item] = cls(self, *vargs, **kvargs)
 
         return wrapper
-
-
-

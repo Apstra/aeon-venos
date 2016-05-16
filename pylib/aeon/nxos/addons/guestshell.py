@@ -2,7 +2,7 @@ from collections import namedtuple
 import time
 import logging
 from functools import partial
-from aosxtools.proxyagents.nxos.exceptions import *
+from aeon.nxos.exceptions import *
 
 
 class Guestshell(object):
