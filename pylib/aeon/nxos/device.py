@@ -5,7 +5,7 @@ import types
 
 from aeon.utils.probe import probe
 from aeon.nxos.connector import NxosConnector as Connector
-from aeon.nxos import exceptions as NxosExc
+from aeon import exceptions
 
 
 __all__ = ['NxosDevice']
@@ -40,7 +40,7 @@ class NxosDevice(object):
         timeout = kwargs.get('timeout') or self.DEFAULT_PROBE_TIMEOUT
         ok, elapsed = probe(self.target, protocol=self.api.proto, timeout=timeout)
         if not ok:
-            raise NxosExc.ProbeError()
+            raise exceptions.ProbeError()
 
     def close(self):
         # nothing to do for close at this time, yo!

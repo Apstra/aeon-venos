@@ -5,7 +5,10 @@ from requests.auth import HTTPBasicAuth
 from copy import copy
 
 import socket
+
+from aeon import exceptions
 from aeon.nxos import exceptions as NxosExc
+
 
 _RE_CONF = re.compile(r"\n\n?\s*")
 
@@ -56,6 +59,11 @@ class NxosRequest(object):
 
         except Exception as exc:
             raise NxosExc.RequestError(exc)
+
+        if 401 == resp.status_code:
+            cmd_exc = exceptions.UnauthorizedError
+            cmd_exc.message = 'not authorized'
+            raise cmd_exc
 
         if 200 != resp.status_code:
             cmd_exc = NxosExc.CommandError
