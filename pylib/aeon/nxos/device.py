@@ -58,7 +58,15 @@ class NxosDevice(object):
         facts['fqdn'] = got['hostname']
         facts['hostname'], _, facts['domain_name'] = facts['fqdn'].partition('.')
 
-        got = exec_show('show hardware')
+        attempts = 1
+        while attempts < 5:
+            try:
+                got = exec_show('show hardware')
+            except:
+                attempts -= 1
+            else:
+                break
+
         facts['os_version'] = got['kickstart_ver_str']
         facts['chassis_id'] = got['chassis_id']
         facts['virtual'] = bool('NX-OSv' in facts['chassis_id'])

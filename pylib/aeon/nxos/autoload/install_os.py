@@ -7,13 +7,9 @@ class _install_os(object):
     DESTDIR = 'bootflash'
     VRF_NAME = 'management'
 
-    def __init__(self, device, filepath=None):
+    def __init__(self, device, image=None):
         self.device = device
-
-        self._binfile = None
-        self._filepath = None
-
-        self.filepath = filepath
+        self.image = image
 
     # ##### -------------------------------------------------------------------
     # #####
@@ -22,26 +18,20 @@ class _install_os(object):
     # ##### -------------------------------------------------------------------
 
     @property
-    def filepath(self):
-        return self._filepath
-
-    @filepath.setter
-    def filepath(self, filepath):
-        self._filepath = filepath
-        self._binfile = filepath.rpartition('/')[2] if filepath else None
-
-    @property
     def md5sum(self):
         """
         Check to see if the file exists on the device
         :return:
         """
         cmd = 'show file {dir}:{bin} md5sum'.format(
-            dir=self.DESTDIR, bin=self._binfile)
+            dir=self.DESTDIR, bin=self.image)
 
         run = self.device.api.exec_opcmd
-        got = run(cmd)
-        return None if not got else got.get('file_content_md5sum').strip()
+        try:
+            got = run(cmd)
+            return got.get('file_content_md5sum').strip()
+        except:
+            return None
 
     @property
     def available_space(self):
@@ -75,13 +65,13 @@ class _install_os(object):
         """
 
         cmd = 'copy {location}/{image} {dir}: vrf {vrf_name}'.format(
-            location=location, image=self._binfile, dir=self.DESTDIR,
+            location=location, image=self.image, dir=self.DESTDIR,
             vrf_name=self.VRF_NAME)
 
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
 
-    def run(self, timeout=5*60):
+    def run(self, timeout=10*60):
         """
         This will invoke the command to install the image, and then
         cause the device to reboot.
@@ -89,7 +79,7 @@ class _install_os(object):
         """
 
         cmd = 'install all nxos {dir}:{bin}'.format(
-            dir=self.DESTDIR, bin=self._binfile)
+            dir=self.DESTDIR, bin=self.image)
 
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
