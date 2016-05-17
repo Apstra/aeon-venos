@@ -5,6 +5,7 @@ __all__ = ['_install_os']
 
 class _install_os(object):
     DESTDIR = 'bootflash'
+    VRF_NAME = 'management'
 
     def __init__(self, device, filepath=None):
         self.device = device
@@ -13,6 +14,12 @@ class _install_os(object):
         self._filepath = None
 
         self.filepath = filepath
+
+    # ##### -------------------------------------------------------------------
+    # #####
+    # #####                       PROPERTIES
+    # #####
+    # ##### -------------------------------------------------------------------
 
     @property
     def filepath(self):
@@ -38,37 +45,41 @@ class _install_os(object):
 
     @property
     def available_space(self):
-        cmd = 'df -k /{dir} | grep bootflash'.format(dir=self.DESTDIR)
+        cmd = 'df -k /{dir} | grep {dir}'.format(dir=self.DESTDIR)
         run = self.device.api.exec_opcmd
-        got = run(cmd, msg_type='bash')
         try:
-            av_sz = int(got[3])
+            got = run(cmd, msg_type='bash')
+            return int(got[3])
         except:
             # @@@ TO-DO: need to handle this properly
             raise
-        return av_sz
 
-    def copy_from(self, location, timeout=1):
+    # ##### -------------------------------------------------------------------
+    # #####
+    # #####                       PUBLIC METHODS
+    # #####
+    # ##### -------------------------------------------------------------------
+
+    def copy_from(self, location, timeout=10*60):
         """
-        This method will fetch the image; the fetch will happen from the device-side
-        using the 'copy' command
+        This method will fetch the image; the fetch will happen from the
+        device-side using the 'copy' command.  Note that the NXAPI appears to
+        be single-threaded, so the code needs to wait until this operation has
+        completed before attempting another API call.  Therefore the :timeout:
+        value is set very high (10min)
+
         :param location: URL to the location of the file.  This URL must be a valid source
         field to the NXOS 'copy' command
+
         :return:
         """
 
-        cmd = 'copy {location}/{image} {dir}: vrf management'.format(
-            location=location, image=self._binfile, dir=self.DESTDIR)
+        cmd = 'copy {location}/{image} {dir}: vrf {vrf_name}'.format(
+            location=location, image=self._binfile, dir=self.DESTDIR,
+            vrf_name=self.VRF_NAME)
 
         run = self.device.api.exec_opcmd
-        try:
-            run(cmd, msg_type='cli_show_ascii', timeout=timeout)
-
-        except exceptions.TimeoutError as exc:
-            pass
-
-        except Exception as exc:
-            raise exc
+        run(cmd, msg_type='cli_show_ascii', timeout=timeout)
 
     def run(self, timeout=5*60):
         """
@@ -81,7 +92,4 @@ class _install_os(object):
             dir=self.DESTDIR, bin=self._binfile)
 
         run = self.device.api.exec_opcmd
-        try:
-            run(cmd, msg_type='cli_show_ascii', timeout=timeout)
-        except:
-            raise
+        run(cmd, msg_type='cli_show_ascii', timeout=timeout)
