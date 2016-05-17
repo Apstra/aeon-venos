@@ -64,9 +64,8 @@ class _install_os(object):
         :return:
         """
 
-        cmd = 'copy {location}/{image} {dir}: vrf {vrf_name}'.format(
-            location=location, image=self.image, dir=self.DESTDIR,
-            vrf_name=self.VRF_NAME)
+        cmd = 'copy {location} {dir}: vrf {vrf_name}'.format(
+            location=location, dir=self.DESTDIR, vrf_name=self.VRF_NAME)
 
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
