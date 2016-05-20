@@ -32,7 +32,8 @@ psr = ArgumentParser(
 
 psr.add_argument(
     '-t', '--target',
-    help='hostname or ip_addr of target device')
+    help='hostname or ip_addr of target device',
+    required=True)
 
 psr.add_argument(
     '-u', '--user',
@@ -51,8 +52,6 @@ psr.add_argument(
     action='store_true', default=True,
     help='output in JSON')
 
-cli_args = psr.parse_args()
-
 
 # ##### -----------------------------------------------------------------------
 # #####
@@ -66,21 +65,21 @@ def exit_results(results, exit_error=None):
 
 
 def main():
-
     try:
+        cli_args = psr.parse_args()
+
         target = cli_args.target
         user = cli_args.user or os.getenv(cli_args.env_user)
         passwd = os.getenv(cli_args.env_passwd)
-
-    except ArgumentParser.ParserError:
-        if not target:
-            exit_results(dict(ok=False, message='Missing target'))
 
         if not user:
             exit_results(dict(ok=False, message='Missing login user'))
 
         if not passwd:
             exit_results(dict(ok=False, message='Missing login password'))
+
+    except ArgumentParser.ParserError as exc:
+            exit_results(dict(ok=False, message=exc.message))
 
     try:
         dev = NxosDevice(target, user=user, passwd=passwd)
