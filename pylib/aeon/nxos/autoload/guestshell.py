@@ -103,13 +103,22 @@ class _guestshell(object):
         self.guestshell('guestshell disable')
         self._wait_state('Deactivated')
 
+    def resize_cpu(self, cpu):
+        self.guestshell('guestshell resize cpu {}'.format(cpu))
+
+    def resize_memory(self, memory):
+        self.guestshell('guestshell resize memory {}'.format(memory))
+
+    def resize_disk(self, disk):
+        self.guestshell('guestshell resize rootfs {}'.format(disk))
+
     def resize(self):
-        self.guestshell('guestshell resize cpu {}'.format(self.sz_need.cpu))
-        self.guestshell('guestshell resize memory {}'.format(self.sz_need.memory))
-        self.guestshell('guestshell resize rootfs {}'.format(self.sz_need.disk))
+        self.resize_cpu(self.sz_need.cpu)
+        self.resize_memory(self.sz_need.memory)
+        self.resize_disk(self.sz_need.disk)
 
     def run(self, command):
-        self.guestshell('guestshell run sudo %s' % command)
+        return self.guestshell('guestshell run %s' % command)
 
     # ---------------------------------------------------------------
     # -----
