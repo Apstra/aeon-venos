@@ -120,6 +120,35 @@ class _guestshell(object):
     def run(self, command):
         return self.guestshell('guestshell run %s' % command)
 
+    def sudoctl(self, enable):
+        """
+        This method is used to enable/disable bash sudo commands running
+        through the guestshell virtual service.  By default sudo access
+        is prevented due to the setting in the 'sudoers' file.  Therefore
+        the setting must be disabled in the file to enable sudo commands.
+
+        This method assumes that the "bash-shell" feature is enabled.
+        @@@ TO-DO: have a mech to check &| control bash-shell feature support
+
+        :param enable:
+            True - enables sudo commands
+            False - disables sudo commands
+
+        :return:
+            returns the response of the sed command needed to make the
+            file change
+        """
+        f_sudoers = "/isan/vdc_1/virtual-instance/guestshell+/rootfs/etc/sudoers"
+
+        if enable is True:
+            sed_cmd = r" 's/\(^Defaults *requiretty\)/#\1/g' "
+        elif enable is False:
+            sed_cmd = r" 's/^#\(Defaults *requiretty\)/\1/g' "
+        else:
+            raise RuntimeError('enable must be True or False')
+
+        self.guestshell("run bash sudo sed -i" + sed_cmd + f_sudoers)
+
     # ---------------------------------------------------------------
     # -----
     # -----                     PRIVATE METHODS
