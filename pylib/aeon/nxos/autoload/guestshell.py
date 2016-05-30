@@ -120,7 +120,7 @@ class _guestshell(object):
     def run(self, command):
         return self.guestshell('guestshell run %s' % command)
 
-    def sudoctl(self, enable):
+    def sudoers(self, enable):
         """
         This method is used to enable/disable bash sudo commands running
         through the guestshell virtual service.  By default sudo access

@@ -3,17 +3,14 @@
 # aeon-nxos
 
 import sys
-import os
 import json
-import argparse
-import yaml
-import logging
 
 import aeon.nxos as nxos
 from aeon.utils.stdargs import ArgumentParser, Stdargs
 from aeon.exceptions import ProbeError, UnauthorizedError
 
 _PROGNAME = 'aeon-nxos'
+
 
 # ##### -----------------------------------------------------------------------
 # #####
@@ -47,13 +44,13 @@ def setup_cli():
 
         gs_subs = gs.add_subparsers(dest='guestshell')
 
-        sudoer = gs_subs.add_parser('sudoer', help='sudo control')
-        sudoer.add_argument(
+        sudoers = gs_subs.add_parser('sudoers', help='sudo control')
+        sudoers.add_argument(
             '--enable', help='enable sudo',
             dest='sudo_enable',
             action='store_const', const=True)
 
-        sudoer.add_argument(
+        sudoers.add_argument(
             '--disable',
             dest='sudo_enable',
             action='store_const', const=False)
@@ -97,6 +94,7 @@ g_cli = setup_cli()
 g_cli_args = g_cli.parse_args()
 g_log = g_cli.log
 
+
 # ##### -----------------------------------------------------------------------
 # #####
 # #####                           Utility Functions
@@ -116,7 +114,7 @@ def exit_results(results, exit_error=None):
 
 def do_facts(dev):
     if g_cli_args.brief:
-        facts=dict(
+        facts = dict(
             os_version=dev.facts['os_version'],
             hw_model=dev.facts['hw_model'],
             serial_number=dev.facts['serial_number'])
@@ -132,8 +130,75 @@ def do_facts(dev):
 # #####
 # ##### -----------------------------------------------------------------------
 
-def do_guestshell():
-    pass
+def do_guestshell(dev):
+
+    cli = g_cli
+
+    GS_MAX = {
+        'cpu': 6,
+        'disk': 1024,
+        'memory': 3072
+    }
+
+    dev.guestshell()
+
+    def do_gs_run():
+        try:
+            got = dev.guestshell.run(cli.args.command[0])
+            exit_results(dict(
+                ok=True,
+                stdout=got))
+
+        except Exception as exc:
+            # @@@ TO-DO - handle this case
+            exit_results(dict(
+                ok=False,
+                message='unable to run command "%s"' % cli.args.command))
+
+    def do_gs_disable():
+        dev.guestshell.disable()
+
+    def do_gs_show():
+        exit_results(dict(
+            ok=True,
+            state=dev.guestshell.state,
+            cpu=dev.guestshell.size.cpu,
+            disk=dev.guestshell.size.disk,
+            memory=dev.guestshell.size.memory))
+
+    def do_gs_enable():
+        if cli.args.wipe is True:
+            dev.guestshell.destroy()
+
+        if cli.args.maxsize is True:
+            cli.args.cpu = GS_MAX['cpu']
+            cli.args.disk = GS_MAX['disk']
+            cli.args.memory = GS_MAX['memory']
+
+        if 'Activated' == dev.guestshell.state:
+            dev.guestshell.disable()
+
+        if cli.args.cpu is not None:
+            dev.guestshell.resize_cpu(cli.args.cpu)
+        if cli.args.disk is not None:
+            dev.guestshell.resize_disk(cli.args.disk)
+        if cli.args.memory is not None:
+            dev.guestshell.resize_memory(cli.args.memory)
+
+        dev.guestshell.enable()
+
+    def do_gs_sudoers():
+        dev.guestshell.sudoers(enable=cli.args.sudo_enable)
+
+    _jmp = dict(
+        show=do_gs_show,
+        run=do_gs_run,
+        disable=do_gs_disable,
+        enable=do_gs_enable,
+        sudoers=do_gs_sudoers
+    )
+
+    _jmp[g_cli.args.guestshell]()
 
 
 # ##### -----------------------------------------------------------------------
