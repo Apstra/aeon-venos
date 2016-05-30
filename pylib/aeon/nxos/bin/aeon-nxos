@@ -27,6 +27,8 @@ def setup_cli():
     psr = cli.psr
     psr_subcmd = psr.add_subparsers(dest='subcmd')
 
+    # ##### -------------------------------------------------------------------
+
     def facts():
         subcmd = psr_subcmd.add_parser(
             'facts',
@@ -36,6 +38,16 @@ def setup_cli():
             '--brief', help='Only the bare minimum facts', action='store_true')
 
     facts()
+
+    # ##### -------------------------------------------------------------------
+
+    def run():
+        sub = psr_subcmd.add_parser('run', help='Run CLI operational command')
+        sub.add_argument('command', nargs=1, help='command string')
+
+    run()
+
+    # ##### -------------------------------------------------------------------
 
     def guestshell():
         gs = psr_subcmd.add_parser(
@@ -79,6 +91,8 @@ def setup_cli():
 
     guestshell()
 
+    # ##### -------------------------------------------------------------------
+
     def rcopy():
         rc = psr_subcmd.add_parser('rcopy', help='Remote copy commands')
         rc.add_argument(
@@ -87,6 +101,13 @@ def setup_cli():
             '--md5sum', help='verify this md5sum after copy')
 
     rcopy()
+
+    # ##### -------------------------------------------------------------------
+
+    def installos():
+        install = psr_subcmd.add_parser('installos', help='Install NXOS software')
+
+    installos()
 
     return cli
 
@@ -122,6 +143,17 @@ def do_facts(dev):
         facts = dev.facts
 
     exit_results(dict(ok=True, facts=facts))
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           run
+# #####
+# ##### -----------------------------------------------------------------------
+
+def do_run(dev):
+    got = dev.api.exec_opcmd(g_cli.args.command[0])
+    exit_results(dict(ok=True, results=got))
 
 
 # ##### -----------------------------------------------------------------------
@@ -210,6 +242,8 @@ def do_guestshell(dev):
 def do_rcopy():
     pass
 
+def do_installos():
+    pass
 
 # ##### -----------------------------------------------------------------------
 # #####
@@ -229,7 +263,9 @@ def start(dev):
     _jmp = {
         'facts': do_facts,
         'guestshell': do_guestshell,
-        'rcopy': do_rcopy
+        'rcopy': do_rcopy,
+        'run': do_run,
+        'installos': do_installos
     }
 
     _jmp.get(g_cli_args.subcmd, unknown)(dev)
