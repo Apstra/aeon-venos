@@ -9,7 +9,7 @@ import argparse
 import yaml
 import logging
 
-from aeon.nxos import NxosDevice
+import aeon.nxos as nxos
 from aeon.nxos.exceptions import NxosException
 from aeon.exceptions import ProbeError, UnauthorizedError
 
@@ -215,7 +215,7 @@ def main():
     passwd = os.getenv(g_cli_args.passwd_var)
 
     try:
-        dev = NxosDevice(target, user=user, passwd=passwd)
+        dev = nxos.Device(target, user=user, passwd=passwd)
 
     except UnauthorizedError:
         exit_results(dict(
