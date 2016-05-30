@@ -1,1 +1,1 @@
-from aeon.nxos.device import NxosDevice
+from aeon.nxos.device import Device

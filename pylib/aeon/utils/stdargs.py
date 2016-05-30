@@ -1,5 +1,8 @@
 import os
 import argparse
+import logging
+
+import aeon.exceptions as exceptions
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -11,40 +14,54 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 class Stdargs(object):
-    def __init__(self, name, description=None):
-        self.psr = ArgumentParser(
-            prog=name,
-            description=description or name,
-            add_help=True)
+    _ENV = {
+        'TARGET_USER': 'AEON_TUSER',
+        'TARGET_PASSWD': 'AEON_TPASSWD',
+        'TARGET': 'AEON_TARGET'
+    }
 
+    def __init__(self, **kwargs):
+        self.progname = kwargs.get('name', 'aeon-nxos')
+        self.psr = ArgumentParser(**kwargs)
+
+        self.args = None
         self.target = None
         self.user = None
         self.passwd = None
+        self.log = None
 
         self._setup_stdargs()
 
     def _setup_stdargs(self):
         self.psr.add_argument(
             '-t', '--target',
-            help='hostname or ip_addr of target device',
-            required=True)
+            default=os.getenv(Stdargs._ENV['TARGET']),
+            help='Target hostname or ip-addr')
 
         self.psr.add_argument(
-            '-u', '--user',
-            help='login user-name')
-
-        self.psr.add_argument(
-            '-U', '--env-user',
-            help='env variable containing username')
-
-        self.psr.add_argument(
-            '-P', '--env-passwd',
-            help='env variable containing passwd')
+            '--logfile',
+            help='name of log file')
 
         self.psr.add_argument(
             '--json',
             action='store_true', default=True,
             help='output in JSON')
+
+        group = self.psr.add_argument_group('authentication')
+
+        group.add_argument(
+            '-u', '--user',
+            help='Target username')
+
+        group.add_argument(
+            '-U', dest='env_user',
+            default=Stdargs._ENV['TARGET_USER'],
+            help='Target username environment variable')
+
+        group.add_argument(
+            '-P', dest='env_passwd',
+            default=Stdargs._ENV['TARGET_PASSWD'],
+            help='Target password environment variable')
 
     def parse_args(self):
         self.args = self.psr.parse_args()
@@ -53,4 +70,26 @@ class Stdargs(object):
         self.user = self.args.user or os.getenv(self.args.env_user)
         self.passwd = os.getenv(self.args.env_passwd)
 
+        if not self.target:
+            raise exceptions.TargetError('missing target value')
+        if not self.user:
+            raise exceptions.TargetError('missing username value')
+        if not self.passwd:
+            raise exceptions.TargetError('missing password value')
+
+        self.log = logging.getLogger(name=self.progname)
+        if self.args.logfile:
+            self._setup_logging()
+
         return self.args
+
+    def _setup_logging(self, level=logging.INFO):
+        self.log.setLevel(level)
+        fh = logging.FileHandler(self.args.logfile)
+
+        fmt = logging.Formatter(
+            '%(asctime)s:%(levelname)s: {target}:%(message)s'
+            .format(target=self.args.target))
+
+        fh.setFormatter(fmt)
+        self.log.addHandler(fh)

@@ -26,24 +26,38 @@ psr = argparse.ArgumentParser(
 
 psr.add_argument(
     '-t', '--target',
+    required=True,
     help='hostname or ip_addr of target device')
 
 psr.add_argument(
-    '-u', '--user',
-    help='login user-name',
-    default=os.getenv('AEON_USER'))
-
-psr.add_argument(
     '--server',
+    required=True,
     help='ip-addr of the server hosting the image files')
 
 psr.add_argument(
     '--image-profile',
+    required=True,
     help='name of the image profile file')
 
 psr.add_argument(
     '--logfile',
     help='name of log file')
+
+# ##### -------------------------
+# ##### authentication
+# ##### -------------------------
+
+group = psr.add_argument_group('authentication')
+
+group.add_argument(
+    '-U', dest='user_var',
+    required=True,
+    help='Username environment variable')
+
+group.add_argument(
+    '-P', dest='passwd_var',
+    required=True,
+    help='Passwd environment variable')
 
 g_cli_args = psr.parse_args()
 g_log = logging.getLogger(name='nxos-installos')
@@ -177,7 +191,7 @@ def start(dev):
     # to reboot when the installation is completed
     # -----------------------------------------------------------------
 
-    g_log.info('starting installation process ... please be patient')
+    g_log.info('running installation process ... please be patient')
     try:
         dev.install_os.run()
     except NxosException:
@@ -197,18 +211,8 @@ def start(dev):
 
 def main():
     target = g_cli_args.target
-    user = g_cli_args.user
-    passwd = os.getenv('AEON_PASSWD')
-
-    if not user:
-        exit_results(dict(
-            ok=False, error_type='login',
-            message='Missing login user'))
-    if not passwd:
-        exit_results(dict(
-            ok=False,
-            error_type='login',
-            message='Missing login password'))
+    user = os.getenv(g_cli_args.user_var)
+    passwd = os.getenv(g_cli_args.passwd_var)
 
     try:
         dev = NxosDevice(target, user=user, passwd=passwd)

@@ -8,10 +8,10 @@ from aeon.nxos.connector import NxosConnector as Connector
 from aeon import exceptions
 
 
-__all__ = ['NxosDevice']
+__all__ = ['Device']
 
 
-class NxosDevice(object):
+class Device(object):
     DEFAULT_PROBE_TIMEOUT = 3
 
     def __init__(self, target, **kwargs):
