@@ -17,7 +17,8 @@ class Stdargs(object):
     _ENV = {
         'TARGET_USER': 'AEON_TUSER',
         'TARGET_PASSWD': 'AEON_TPASSWD',
-        'TARGET': 'AEON_TARGET'
+        'TARGET': 'AEON_TARGET',
+        'LOGFILE': 'AEON_LOGFILE'
     }
 
     def __init__(self, **kwargs):
@@ -40,6 +41,7 @@ class Stdargs(object):
 
         self.psr.add_argument(
             '--logfile',
+            default=os.getenv(Stdargs._ENV['LOGFILE']),
             help='name of log file')
 
         self.psr.add_argument(
