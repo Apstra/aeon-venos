@@ -8,7 +8,7 @@ import json
 import aeon.nxos as nxos
 import aeon.nxos.exceptions as NxosExc
 from aeon.utils.stdargs import ArgumentParser, Stdargs
-from aeon.exceptions import ProbeError, UnauthorizedError
+from aeon.exceptions import ProbeError, UnauthorizedError, TimeoutError
 
 _PROGNAME = 'aeon-nxos'
 
@@ -72,6 +72,9 @@ def setup_cli():
         run.add_argument(
             'command', nargs=1,
             help='command string')
+        run.add_argument(
+            '--timeout', type=int,
+            help='command timeout, 0=ignore')
 
         enable = gs_subs.add_parser(
             'enable', help='enable guestshell')
@@ -181,16 +184,18 @@ def do_guestshell(cli, dev):
 
     def do_gs_run():
         try:
-            got = dev.guestshell.run(cli.args.command[0])
-            exit_results(dict(
-                ok=True,
-                stdout=got))
+            got = dev.api.exec_opcmd(
+                "guestshell run {cmd}".format(cmd=cli.args.command[0]),
+                msg_type='cli_show_ascii',
+                timeout=g_cli.args.timeout)
+
+            exit_results(dict(ok=True, stdout=got))
 
         except Exception as exc:
             # @@@ TO-DO - handle this case
             exit_results(dict(
                 ok=False,
-                message='unable to run command "%s"' % cli.args.command))
+                message='unable to run command "%s"' % cli.args.command[0]))
 
     def do_gs_disable():
         dev.guestshell.disable()
