@@ -1,0 +1,4 @@
+class EosException(Exception):
+    pass
+
+
