@@ -8,6 +8,8 @@ __all__ = ['Device']
 
 class Device(object):
     DEFAULT_PROBE_TIMEOUT = 3
+    DEFAULT_USER = 'admin'
+    DEFAULT_PASSWD = 'admin'
 
     def __init__(self, target, **kwargs):
         """
@@ -17,11 +19,9 @@ class Device(object):
             'passwd': login password, defaults to "admin
         """
         self.target = target
-
-        user = kwargs.get('user', 'admin')
-        passwd = kwargs.get('passwd', 'admin')
-
-        self.api = Connector(hostname=self.target, user=user, passwd=passwd)
+        self.api = Connector(hostname=self.target,
+                             user=kwargs.get('user', self.DEFAULT_USER),
+                             passwd=kwargs.get('passwd', self.DEFAULT_PASSWD))
 
         self.facts = {}
 
@@ -40,7 +40,7 @@ class Device(object):
     def gather_facts(self):
 
         facts = self.facts
-        got_ver = self.api.execute('show version')['result'][0]
+        got_ver = self.api.execute('show version')
 
         facts['vendor'] = 'arista'
         facts['os'] = 'eos'
@@ -53,7 +53,7 @@ class Device(object):
         facts['chassis_id'] = None
 
         try:
-            got_host = self.api.execute('show hostname').get('result')[0]
+            got_host = self.api.execute('show hostname')
             facts['fqdn'] = got_host.get('fqdn')
             facts['hostname'] = got_host.get('hostname')
         except:
