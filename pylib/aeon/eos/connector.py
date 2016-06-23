@@ -1,7 +1,7 @@
 import pyeapi
 import socket
 
-from aeon.exceptions import ConfigError
+from aeon.exceptions import ConfigError, CommandError
 
 
 __all__ = ['Connector']
@@ -30,7 +30,10 @@ class Connector(object):
         commands = commands if isinstance(commands, list) else [commands]
         commands.insert(0, 'enable')
 
-        got = self.eapi.execute(commands)
+        try:
+            got = self.eapi.execute(commands)
+        except Exception as exc:
+            raise CommandError(exc=exc, commands=commands)
 
         # get the results.  if ther was only one command return the actual
         # results item (vs. making the caller do [0]).
