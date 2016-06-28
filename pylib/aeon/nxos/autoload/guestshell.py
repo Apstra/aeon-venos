@@ -4,7 +4,9 @@ import logging
 from functools import partial
 from aeon.nxos.exceptions import CommandError
 
+_MODEL_RC_LIMITS = {
 
+}
 class _guestshell(object):
     GUESTSHELL_CPU = 6
     GUESTSHELL_DISK = 1024
@@ -21,10 +23,15 @@ class _guestshell(object):
         self.cli = self.device.api.exec_opcmd
         self.log = log or logging.getLogger()
 
-        self.sz_has = None
-        self.sz_need = _guestshell.Resources(
-            cpu=cpu, memory=memory, disk=disk)
+        self.sz_max = {}
+        self._get_sz_max()
 
+        self.sz_need = _guestshell.Resources(
+            cpu=min(cpu, self.sz_max['cpu']),
+            memory=min(memory, self.sz_max['memory']),
+            disk=min(disk, self.sz_max['disk']))
+
+        self.sz_has = None
         self._state = None
         self.exists = False
 
@@ -96,6 +103,9 @@ class _guestshell(object):
         self._wait_state('Activated')
 
     def destroy(self):
+        if 'None' == self.state:
+            return
+
         self.guestshell('guestshell destroy')
         self._wait_state('None')
 
@@ -154,6 +164,19 @@ class _guestshell(object):
     # -----                     PRIVATE METHODS
     # -----
     # ---------------------------------------------------------------
+
+    def _get_sz_max(self):
+        got = self.cli('show virtual-service global')
+        limits = got['TABLE_resource_limits']['ROW_resource_limits']
+        for resource in limits:
+            name = resource['media_name']
+            max_val = int(resource['quota'])
+            if 'CPU' in name:
+                self.sz_max['cpu'] = max_val
+            elif 'memory' in name:
+                self.sz_max['memory'] = max_val
+            elif 'flash' in name:
+                self.sz_max['disk'] = max_val
 
     def _get_sz_info(self):
         """

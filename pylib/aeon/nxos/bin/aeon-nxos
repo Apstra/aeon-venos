@@ -173,13 +173,6 @@ def do_run(cli, dev):
 # ##### -----------------------------------------------------------------------
 
 def do_guestshell(cli, dev):
-
-    GS_MAX = {
-        'cpu': 6,
-        'disk': 1024,
-        'memory': 3072
-    }
-
     dev.guestshell()
 
     def do_gs_run():
@@ -213,9 +206,9 @@ def do_guestshell(cli, dev):
             dev.guestshell.destroy()
 
         if cli.args.maxsize is True:
-            cli.args.cpu = GS_MAX['cpu']
-            cli.args.disk = GS_MAX['disk']
-            cli.args.memory = GS_MAX['memory']
+            cli.args.cpu = dev.guestshell.sz_max['cpu']
+            cli.args.disk = dev.guestshell.sz_max['disk']
+            cli.args.memory = dev.guestshell.sz_max['memory']
 
         if 'Activated' == dev.guestshell.state:
             dev.guestshell.disable()
