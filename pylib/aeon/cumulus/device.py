@@ -40,6 +40,12 @@ class Device(object):
         if not ok:
             raise exceptions.ProbeError()
 
+    def _serial_from_link(self, link_name):
+        good, got = self.api.execute(['ip link show dev %s' % link_name])
+        data = got[0]['stdout']
+        macaddr = data.partition('link/ether ')[-1].split()[0]
+        return macaddr.replace(':', '').upper()
+
     def gather_facts(self):
 
         facts = self.facts
@@ -47,28 +53,38 @@ class Device(object):
 
         good, got = self.api.execute([
             'hostname',
-            'sudo decode-syseeprom',
-            'cat /etc/lsb-release | grep RELEASE | cut -d= -f2'
+            'cat /etc/lsb-release | grep RELEASE | cut -d= -f2',
+            'test -e /usr/cumulus/bin/decode-syseeprom'
         ])
-
-        if not good:
-            raise exceptions.CommandError(commands=got)
 
         facts['fqdn'] = got[0]['stdout'].strip()
         facts['hostname'] = facts['fqdn']
+        facts['os_version'] = got[1]['stdout'].strip()
 
-        decode = got[1]['stdout']
-        scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+(.+)')
-        gathered = {
-            tag.strip(): value
-            for tag, value in scanner.findall(decode)}
+        if 0 != got[2]['exit_code']:
+            # this is a VX device
+            facts['virtual'] = True
+            facts['vendor'] = 'CUMULUS-NETWORKS'
+            facts['serial_number'] = self._serial_from_link("eth0")
+            facts['hw_model'] = 'CUMULUS-VX'
+            facts['hw_part_number'] = None
+            facts['hw_version'] = None
+            facts['service_tag'] = None
+        else:
+            good, got = self.api.execute([
+                'sudo decode-syseeprom',
+            ])
 
-        facts['vendor'] = gathered['Vendor Name']
-        facts['serial_number'] = gathered['Serial Number']
-        facts['hw_model'] = gathered['Product Name']
-        facts['hw_part_number'] = gathered['Part Number']
-        facts['hw_version'] = gathered['Label Revision']
-        facts['service_tag'] = gathered['Service Tag']
-        facts['virtual'] = False    # TODO: need to check for this
+            decode = got[1]['stdout']
+            scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+(.+)')
+            gathered = {
+                tag.strip(): value
+                for tag, value in scanner.findall(decode)}
 
-        facts['os_version'] = got[2]['stdout'].strip()
+            facts['vendor'] = gathered['Vendor Name']
+            facts['serial_number'] = gathered['Serial Number']
+            facts['hw_model'] = gathered['Product Name']
+            facts['hw_part_number'] = gathered['Part Number']
+            facts['hw_version'] = gathered['Label Revision']
+            facts['service_tag'] = gathered['Service Tag']
+            facts['virtual'] = False
