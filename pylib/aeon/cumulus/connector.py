@@ -27,8 +27,8 @@ class Connector(object):
                 self.hostname, port=self.port,
                 username=self.user, password=self.passwd)
 
-        except NoValidConnectionsError as exc:
-            raise LoginNotReadyError(exc.message)
+        except Exception as exc:
+            raise LoginNotReadyError(exc=exc, message=exc.message)
 
     def close(self):
         self._client.close()

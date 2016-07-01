@@ -29,4 +29,6 @@ class CommandError(Exception):
 
 
 class LoginNotReadyError(Exception):
-    pass
+    def __init__(self, exc, message):
+        super(CommandError, self).__init__(message=message)
+        self.exc = exc
