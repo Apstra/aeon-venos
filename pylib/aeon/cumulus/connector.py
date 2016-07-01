@@ -1,6 +1,8 @@
-import paramiko
 import socket
-from aeon.exceptions import ConfigError, CommandError
+
+import paramiko
+from paramiko.ssh_exception import NoValidConnectionsError
+from aeon.exceptions import LoginNotReadyError, ConfigError, CommandError
 
 
 __all__ = ['Connector']
@@ -20,9 +22,13 @@ class Connector(object):
         self.open()
 
     def open(self):
-        self._client.connect(
-            self.hostname, port=self.port,
-            username=self.user, password=self.passwd)
+        try:
+            self._client.connect(
+                self.hostname, port=self.port,
+                username=self.user, password=self.passwd)
+
+        except NoValidConnectionsError as exc:
+            raise LoginNotReadyError(exc.message)
 
     def close(self):
         self._client.close()

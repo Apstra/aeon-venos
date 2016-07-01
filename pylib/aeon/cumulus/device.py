@@ -1,3 +1,4 @@
+import re
 
 from aeon import exceptions
 from aeon.utils.probe import probe
@@ -6,7 +7,9 @@ from aeon.cumulus.connector import Connector
 
 __all__ = ['Device']
 
+
 class Device(object):
+    OS_NAME = 'cumulus'
     DEFAULT_PROBE_TIMEOUT = 3
     DEFAULT_USER = 'admin'
     DEFAULT_PASSWD = 'admin'
@@ -40,26 +43,32 @@ class Device(object):
     def gather_facts(self):
 
         facts = self.facts
-        got_ver = self.api.execute('show version')
+        facts['os_name'] = self.OS_NAME
 
-        facts['vendor'] = 'arista'
-        facts['os'] = 'eos'
-        facts['os_version'] = got_ver['version']
-        facts['serial_number'] = got_ver['serialNumber']
-        facts['hw_model'] = got_ver['modelName']
-        facts['hw_version'] = got_ver['hardwareRevision']
-        facts['hw_part_number'] = None
-        facts['hw_part_version'] = None
-        facts['chassis_id'] = None
+        good, got = self.api.execute([
+            'hostname',
+            'sudo decode-syseeprom',
+            'cat /etc/lsb-release | grep RELEASE | cut -d= -f2'
+        ])
 
-        try:
-            got_host = self.api.execute('show hostname')
-            facts['fqdn'] = got_host.get('fqdn')
-            facts['hostname'] = got_host.get('hostname')
-        except:
-            facts['fqdn'] = 'localhost'
-            facts['hostname'] = 'localhost'
+        if not good:
+            raise exceptions.CommandError(commands=got)
 
+        facts['fqdn'] = got[0]['stdout'].strip()
+        facts['hostname'] = facts['fqdn']
+
+        decode = got[1]['stdout']
+        scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+(.+)')
+        gathered = {
+            tag.strip(): value
+            for tag, value in scanner.findall(decode)}
+
+        facts['vendor'] = gathered['Vendor Name']
+        facts['serial_number'] = gathered['Serial Number']
+        facts['hw_model'] = gathered['Product Name']
+        facts['hw_part_number'] = gathered['Part Number']
+        facts['hw_version'] = gathered['Label Revision']
+        facts['service_tag'] = gathered['Service Tag']
         facts['virtual'] = False    # TODO: need to check for this
 
-
+        facts['os_version'] = got[2]['stdout'].strip()
