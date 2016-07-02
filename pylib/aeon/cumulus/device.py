@@ -60,8 +60,9 @@ class Device(object):
         facts['fqdn'] = got[0]['stdout'].strip()
         facts['hostname'] = facts['fqdn']
         facts['os_version'] = got[1]['stdout'].strip()
+        facts['virtual'] = bool(0 != got[2]['exit_code'])
 
-        if 0 != got[2]['exit_code']:
+        if facts['virtual'] is True:
             # this is a VX device
             facts['virtual'] = True
             facts['vendor'] = 'CUMULUS-NETWORKS'
@@ -75,16 +76,15 @@ class Device(object):
                 'sudo decode-syseeprom',
             ])
 
-            decode = got[1]['stdout']
+            syseeprom = got[0]['stdout']
             scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+(.+)')
-            gathered = {
+            decoded = {
                 tag.strip(): value
-                for tag, value in scanner.findall(decode)}
+                for tag, value in scanner.findall(syseeprom)}
 
-            facts['vendor'] = gathered['Vendor Name']
-            facts['serial_number'] = gathered['Serial Number']
-            facts['hw_model'] = gathered['Product Name']
-            facts['hw_part_number'] = gathered['Part Number']
-            facts['hw_version'] = gathered['Label Revision']
-            facts['service_tag'] = gathered['Service Tag']
-            facts['virtual'] = False
+            facts['vendor'] = decoded['Vendor Name']
+            facts['serial_number'] = decoded['Serial Number']
+            facts['hw_model'] = decoded['Product Name']
+            facts['hw_part_number'] = decoded['Part Number']
+            facts['hw_version'] = decoded['Label Revision']
+            facts['service_tag'] = decoded['Service Tag']

@@ -30,5 +30,5 @@ class CommandError(Exception):
 
 class LoginNotReadyError(Exception):
     def __init__(self, exc, message):
-        super(CommandError, self).__init__(message=message)
+        super(LoginNotReadyError, self).__init__(message=message)
         self.exc = exc
