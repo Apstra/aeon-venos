@@ -201,6 +201,9 @@ def do_guestshell(cli, dev):
             disk=dev.guestshell.size.disk,
             memory=dev.guestshell.size.memory))
 
+    def do_gs_destroy():
+        dev.guestshell.destroy()
+
     def do_gs_enable():
         if cli.args.wipe is True:
             dev.guestshell.destroy()
@@ -230,7 +233,8 @@ def do_guestshell(cli, dev):
         run=do_gs_run,
         disable=do_gs_disable,
         enable=do_gs_enable,
-        sudoers=do_gs_sudoers
+        sudoers=do_gs_sudoers,
+        destroy=do_gs_destroy
     )
 
     _jmp[g_cli.args.guestshell]()

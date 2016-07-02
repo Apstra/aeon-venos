@@ -13,6 +13,10 @@ import aeon.nxos as nxos
 from aeon.nxos.exceptions import NxosException
 from aeon.exceptions import ProbeError, UnauthorizedError
 
+_OS_NAME = 'nxos'
+_PROGNAME = '%s-installos' % _OS_NAME
+
+
 # ##### -----------------------------------------------------------------------
 # #####
 # #####                           Command Line Arguments
@@ -35,9 +39,13 @@ psr.add_argument(
     help='ip-addr of the server hosting the image files')
 
 psr.add_argument(
-    '--image-profile',
+    '--image',
     required=True,
-    help='name of the image profile file')
+    help='image file-name')
+
+psr.add_argument(
+    '--md5sum', required=True,
+    help='MD5 checksum value')
 
 psr.add_argument(
     '--logfile',
@@ -50,19 +58,37 @@ psr.add_argument(
 group = psr.add_argument_group('authentication')
 
 group.add_argument(
-    '-U', dest='user_var',
-    required=True,
+    '--user', help='login user-name')
+
+group.add_argument(
+    '-U', dest='env_user',
     help='Username environment variable')
 
 group.add_argument(
-    '-P', dest='passwd_var',
+    '-P', dest='env_passwd',
     required=True,
     help='Passwd environment variable')
 
 g_cli_args = psr.parse_args()
-g_log = logging.getLogger(name='nxos-installos')
 
 
+def setup_logging(logname, logfile, target):
+    log = logging.getLogger(name=logname)
+    log.setLevel(logging.INFO)
+
+    fmt = logging.Formatter(
+        '%(asctime)s:%(levelname)s:{target}:%(message)s'
+        .format(target=target))
+
+    handler = logging.FileHandler(logfile) if logfile else logging.StreamHandler(sys.stdout)
+    handler.setFormatter(fmt)
+    log.addHandler(handler)
+    return log
+
+
+g_log = setup_logging(logname=_PROGNAME,
+                      logfile=g_cli_args.logfile,
+                      target=g_cli_args.target)
 def setup_logging():
     g_log.setLevel(logging.INFO)
     fh = logging.FileHandler(g_cli_args.logfile)
@@ -93,19 +119,11 @@ def exit_results(results, exit_error=None):
 # #####
 # ##### -----------------------------------------------------------------------
 
-def copy_image_to_device(dev, profile):
+def copy_image_to_device(dev):
 
-    copy_from = profile['copy_from']
-
-    if '{server}' in copy_from:
-        if not g_cli_args.server:
-            exit_results(dict(
-                ok=False,
-                error_type='args',
-                message='Missing --server parameter'))
-        copy_from = copy_from.format(server=g_cli_args.server)
-
-    copy_from = os.path.join(copy_from, dev.install_os.image)
+    copy_from = "http://{server}/images/{os_name}/{image_file}".format(
+        server=g_cli_args.server, os_name=_OS_NAME,
+        image_file=g_cli_args.image)
 
     # --------------------------------------------------------
     # perform the copy, the device initiates this copy command
@@ -128,7 +146,7 @@ def copy_image_to_device(dev, profile):
     # --------------------------------------------
 
     has_md5sum = dev.install_os.md5sum
-    if has_md5sum != profile['md5sum']:
+    if has_md5sum != g_cli_args.md5sum:
         msg = 'md5sum mismatch after file copy, need user attention'
         g_log.error(msg)
         exit_results(dict(
@@ -140,39 +158,36 @@ def copy_image_to_device(dev, profile):
 
 
 def start(dev):
-    profile = yaml.load(open(g_cli_args.image_profile))
 
-    # @@@ TO-DO: need to schema-check the profile data; the current
-    # @@@        code presumes that the files are perfectly formed.
-
-    req_os_version = profile['os_version']
-    dev_os_version = dev.facts['os_version']
-
-    g_log.info("required OS version is: %s" % req_os_version)
-    g_log.info("device is current running: %s" % dev_os_version)
-
-    if req_os_version == dev_os_version:
-        msg = 'image is already installed, so all done.'
-        g_log.info(msg)
-        exit_results(dict(
-            ok=True,
-            rebooting=False,
-            message=msg
-        ))
+    # TODO: add back the version string check before copy
+    # req_os_version = profile['os_version']
+    # dev_os_version = dev.facts['os_version']
+    #
+    # g_log.info("required OS version is: %s" % req_os_version)
+    # g_log.info("device is current running: %s" % dev_os_version)
+    #
+    # if req_os_version == dev_os_version:
+    #     msg = 'image is already installed, so all done.'
+    #     g_log.info(msg)
+    #     exit_results(dict(
+    #         ok=True,
+    #         rebooting=False,
+    #         message=msg
+    #     ))
 
     # -----------------------------------------------------------------
     # does the image exist on the device and/or need to be copied down?
     # -----------------------------------------------------------------
 
-    dev.install_os(image=profile['image'])
+    dev.install_os(image=g_cli_args.image)
     has_md5sum = dev.install_os.md5sum
 
     if not has_md5sum:
         # need to copy the image over to the device
         g_log.info('image does not exist on device, need to copy over')
-        copy_image_to_device(dev, profile)
+        copy_image_to_device(dev)
 
-    elif has_md5sum != profile['md5sum']:
+    elif has_md5sum != g_cli_args.md5sum:
         # need to make sure the image/md5sum matches
         # @@@ TO-DO: implement this code branch
 
@@ -211,8 +226,24 @@ def start(dev):
 
 def main():
     target = g_cli_args.target
-    user = os.getenv(g_cli_args.user_var)
-    passwd = os.getenv(g_cli_args.passwd_var)
+    user = g_cli_args.user or os.getenv(g_cli_args.env_user)
+    passwd = os.getenv(g_cli_args.env_passwd)
+
+    if not user:
+        errmsg = "login user-name missing"
+        g_log.error(errmsg)
+        exit_results(results=dict(
+            ok=False,
+            error_type='login',
+            message=errmsg))
+
+    if not passwd:
+        errmsg = "login user-password missing"
+        g_log.error(errmsg)
+        exit_results(results=dict(
+            ok=False,
+            error_type='login',
+            message=errmsg))
 
     try:
         dev = nxos.Device(target, user=user, passwd=passwd)
