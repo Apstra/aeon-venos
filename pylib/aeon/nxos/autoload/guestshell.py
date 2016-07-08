@@ -114,13 +114,16 @@ class _guestshell(object):
         self._wait_state('Deactivated')
 
     def resize_cpu(self, cpu):
-        self.guestshell('guestshell resize cpu {}'.format(cpu))
+        value = min(cpu, self.sz_max['cpu'])
+        self.guestshell('guestshell resize cpu {}'.format(value))
 
     def resize_memory(self, memory):
-        self.guestshell('guestshell resize memory {}'.format(memory))
+        value = min(memory, self.sz_max['memory'])
+        self.guestshell('guestshell resize memory {}'.format(value))
 
     def resize_disk(self, disk):
-        self.guestshell('guestshell resize rootfs {}'.format(disk))
+        value = min(disk, self.sz_max['disk'])
+        self.guestshell('guestshell resize rootfs {}'.format(value))
 
     def resize(self):
         self.resize_cpu(self.sz_need.cpu)

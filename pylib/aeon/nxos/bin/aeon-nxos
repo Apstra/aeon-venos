@@ -85,9 +85,9 @@ def setup_cli():
         enable.add_argument(
             '--maxsize', help='enable guestshell with maximum resources',
             action='store_true')
-        enable.add_argument('--cpu', help='CPU resource value')
-        enable.add_argument('--memory', help='Memory resource value')
-        enable.add_argument('--disk', help='Disk resource value')
+        enable.add_argument('--cpu', type=int, help='CPU resource value')
+        enable.add_argument('--memory', type=int, help='Memory resource value')
+        enable.add_argument('--disk', type=int, help='Disk resource value')
 
         gs_subs.add_parser('show', help='show guestshell details')
         gs_subs.add_parser('disable', help='dsiable guestshell')
