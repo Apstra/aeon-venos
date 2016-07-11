@@ -6,6 +6,7 @@
 #
 
 from setuptools import setup, find_packages
+from glob import glob
 
 # parse requirements
 req_lines = [line.strip() for line in open(
@@ -27,6 +28,7 @@ setup(
     package_dir={'': libdir},
     packages=packages,
     install_requires=install_reqs,
+    scripts=glob('bin/*'),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
