@@ -17,12 +17,12 @@ libdir = 'pylib'
 packages = find_packages(libdir)
 
 setup(
-    name="aeon-core",
+    name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.0.1",
+    version="0.0.2",
     author="Jeremy Schulman",
     author_email="jeremy@apstra.com",
-    description=("AEON core library"),
+    description=("Aeon vendor NOS driver library"),
     license="Apache 2.0",
     keywords="networking automation vendor-agnostic",
     package_dir={'': libdir},
