@@ -16,7 +16,7 @@ libdir = 'pylib'
 packages = find_packages(libdir)
 
 setup(
-    name="aeon-core",
+    name="aeon-venos",
     namespace_packages=['aeon'],
     version="0.0.1",
     author="Jeremy Schulman",
