@@ -6,6 +6,7 @@
 #
 
 from setuptools import setup, find_packages
+from glob import glob
 
 # parse requirements
 req_lines = [line.strip() for line in open(
@@ -18,15 +19,16 @@ packages = find_packages(libdir)
 setup(
     name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.0.1",
+    version="0.0.2",
     author="Jeremy Schulman",
     author_email="jeremy@apstra.com",
-    description=("AEON core library"),
+    description=("Aeon vendor NOS driver library"),
     license="Apache 2.0",
     keywords="networking automation vendor-agnostic",
     package_dir={'': libdir},
     packages=packages,
     install_requires=install_reqs,
+    scripts=glob('bin/*'),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
