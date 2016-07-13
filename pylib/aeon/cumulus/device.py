@@ -77,7 +77,7 @@ class Device(object):
             ])
 
             syseeprom = got[0]['stdout']
-            scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+(.+)')
+            scanner = re.compile(r'(.+) 0x[A-F0-9]{2}\s+\d+\s+(.+)')
             decoded = {
                 tag.strip(): value
                 for tag, value in scanner.findall(syseeprom)}
