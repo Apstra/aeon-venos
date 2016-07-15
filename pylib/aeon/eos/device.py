@@ -45,12 +45,16 @@ class Device(object):
         facts['vendor'] = 'arista'
         facts['os'] = 'eos'
         facts['os_version'] = got_ver['version']
-        facts['serial_number'] = got_ver['serialNumber']
         facts['hw_model'] = got_ver['modelName']
         facts['hw_version'] = got_ver['hardwareRevision']
         facts['hw_part_number'] = None
         facts['hw_part_version'] = None
         facts['chassis_id'] = None
+
+        facts['virtual'] = bool('vEOS' == facts['hw_model'])
+
+        facts['serial_number'] = got_ver['systemMacAddress'].replace(':', '').upper() \
+            if facts['virtual'] else got_ver['serialNumber']
 
         try:
             got_host = self.api.execute('show hostname')
@@ -60,6 +64,5 @@ class Device(object):
             facts['fqdn'] = 'localhost'
             facts['hostname'] = 'localhost'
 
-        facts['virtual'] = False    # TODO: need to check for this
 
 
