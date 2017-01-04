@@ -91,5 +91,5 @@ class Device(object):
             facts['serial_number'] = decoded['Serial Number']
             facts['hw_model'] = decoded['Product Name']
             facts['hw_part_number'] = decoded['Part Number']
-            facts['hw_version'] = decoded['Label Revision']
-            facts['service_tag'] = decoded['Service Tag']
+            facts['hw_version'] = decoded.get('Label Revision', 'no-hw-version')
+            facts['service_tag'] = decoded.get('Service Tag', 'no-service-tag')
