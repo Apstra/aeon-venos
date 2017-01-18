@@ -32,8 +32,8 @@ class Connector(object):
                 self.hostname, port=self.port,
                 username=self.user, password=self.passwd)
 
-        except Exception as exc:
-            raise LoginNotReadyError(exc=exc, message=exc.message)
+        except Exception as e:
+            raise
 
     def close(self):
         self._client.close()
