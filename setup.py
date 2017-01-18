@@ -24,7 +24,7 @@ packages = find_packages(libdir)
 setup(
     name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.3.0",
+    version="0.3.1",
     author="Jeremy Schulman",
     author_email="jeremy@apstra.com",
     description=("Aeon vendor NOS driver library"),
