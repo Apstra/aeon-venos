@@ -72,6 +72,7 @@ class Device(object):
             facts['virtual'] = True
             facts['vendor'] = 'CUMULUS-NETWORKS'
             facts['serial_number'] = self._serial_from_link("eth0")
+            facts['mac_address'] = self._serial_from_link("eth0")
             facts['hw_model'] = 'CUMULUS-VX'
             facts['hw_part_number'] = None
             facts['hw_version'] = None
@@ -87,6 +88,7 @@ class Device(object):
                 tag.strip(): value
                 for tag, value in scanner.findall(syseeprom)}
 
+            facts['mac_address'] = self._serial_from_link("eth0")
             facts['vendor'] = decoded['Vendor Name']
             facts['serial_number'] = decoded['Serial Number']
             facts['hw_model'] = decoded['Product Name']
