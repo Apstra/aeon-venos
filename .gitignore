@@ -63,5 +63,8 @@ target/
 
 .idea/
 
+# Python Virtual Environments
 venv/
+
+# Mac OS System files
 .DS_Store
