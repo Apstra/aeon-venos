@@ -65,9 +65,9 @@ class Device(object):
         facts['fqdn'] = got[0]['stdout'].strip()
         facts['hostname'] = facts['fqdn']
         facts['os_version'] = got[1]['stdout'].strip()
-        facts['virtual'] = bool(0 != got[2]['exit_code'])
+        facts['virtual_2.x'] = bool(0 != got[2]['exit_code'])
 
-        if facts['virtual'] is True:
+        if facts['virtual_2.x'] is True:
             # this is a VX device
             facts['virtual'] = True
             facts['vendor'] = 'CUMULUS-NETWORKS'
@@ -89,9 +89,10 @@ class Device(object):
                 for tag, value in scanner.findall(syseeprom)}
 
             facts['mac_address'] = self._serial_from_link("eth0")
-            facts['vendor'] = decoded['Vendor Name']
-            facts['serial_number'] = decoded['Serial Number']
-            facts['hw_model'] = decoded['Product Name']
-            facts['hw_part_number'] = decoded['Part Number']
+            facts['vendor'] = decoded.get('Vendor Name', 'no-vendor-name')
+            facts['serial_number'] = decoded.get('Serial Number', 'no-serial-number')
+            facts['hw_model'] = decoded.get('Product Name', 'no-product-name')
+            facts['virtual'] = bool(facts['hw_model'] == 'VX')
+            facts['hw_part_number'] = decoded.get('Part Number', 'no-part-number')
             facts['hw_version'] = decoded.get('Label Revision', 'no-hw-version')
             facts['service_tag'] = decoded.get('Service Tag', 'no-service-tag')
