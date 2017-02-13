@@ -65,10 +65,10 @@ class Device(object):
         facts['fqdn'] = got[0]['stdout'].strip()
         facts['hostname'] = facts['fqdn']
         facts['os_version'] = got[1]['stdout'].strip()
-        facts['virtual_2.x'] = bool(0 != got[2]['exit_code'])
+        virt2 = bool(0 != got[2]['exit_code'])
 
-        if facts['virtual_2.x'] is True:
-            # this is a VX device
+        if virt2 is True:
+            # this is a Cumulus VX 2.x device
             facts['virtual'] = True
             facts['vendor'] = 'CUMULUS-NETWORKS'
             facts['serial_number'] = self._serial_from_link("eth0")

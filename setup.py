@@ -21,6 +21,7 @@ setup(
     namespace_packages=['aeon'],
     version="0.3.3",
     author="Jeremy Schulman",
+    url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
     description=("Aeon vendor NOS driver library"),
     license="Apache 2.0",
