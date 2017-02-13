@@ -1,8 +1,3 @@
-# Copyright 2014-present, Apstra, Inc. All rights reserved.
-#
-# This source code is licensed under End User License Agreement found in the
-# LICENSE file at http://www.apstra.com/community/eula
-
 #
 #  Copyright 2016-present, Apstra, Inc.  All rights reserved.
 #
@@ -24,8 +19,9 @@ packages = find_packages(libdir)
 setup(
     name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.3.2",
+    version="0.3.3",
     author="Jeremy Schulman",
+    url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
     description=("Aeon vendor NOS driver library"),
     license="Apache 2.0",

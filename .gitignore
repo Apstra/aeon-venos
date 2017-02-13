@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+venv/
 env/
 build/
 develop-eggs/
@@ -62,3 +63,6 @@ target/
 .ipynb_checkpoints
 
 .idea/
+
+# Mac OS System files
+.DS_Store
