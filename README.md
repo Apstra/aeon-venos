@@ -1,5 +1,5 @@
 # AEON-VENOS
-A wrapper module to support various network operating systems.
+A Python wrapper module to support various network operating systems.
 
 ## Purpose
 AEON-VENOS's primary purpose:
