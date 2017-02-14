@@ -6,8 +6,6 @@
 import socket
 
 import paramiko
-from paramiko.ssh_exception import NoValidConnectionsError
-from aeon.exceptions import LoginNotReadyError, ConfigError, CommandError
 
 
 __all__ = ['Connector']
@@ -32,7 +30,7 @@ class Connector(object):
                 self.hostname, port=self.port,
                 username=self.user, password=self.passwd)
 
-        except Exception as e:
+        except Exception:
             raise
 
     def close(self):

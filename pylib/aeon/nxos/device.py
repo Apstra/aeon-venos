@@ -6,7 +6,6 @@
 
 from functools import partial
 import importlib
-import types
 
 from aeon.utils.probe import probe
 from aeon.nxos.connector import NxosConnector as Connector

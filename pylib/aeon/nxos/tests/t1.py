@@ -3,7 +3,5 @@
 # This source code is licensed under End User License Agreement found in the
 # LICENSE file at http://www.apstra.com/community/eula
 
-import logging
 
-from aosxtools.proxyagents.nxos import *
-
+from aosxtools.proxyagents.nxos import *  # noqa

@@ -1,8 +1,15 @@
 language: python
-
+install:
+- pip install tox coveralls pytest
+script:
+- tox
+env:
+  - TOXENV=py27
+  - TOXENV=flake8
+  - TOXENV=coverage_travis
 deploy:
   provider: pypi
-  distributions: "sdist bdist_wheel"
+  distributions: sdist
   user: "apstra"
   password:
     secure: "Edb1AeAlSpqGb7inEVCkpNPSbqqlPCMIHvahUg57JV+BmHJzbuZm11wVEkHwP+Bgxi/0Gl7WfY0p1z6OXhyZhnzkx1XJYE2wEOB/VoBq/I+6iMAYnlRM7X4gRJGo6yZNvr7Uj1ihD3oKLG7zfpQpMBmS6lTVA1f+G8jjFd9BYZZ4Rzf3UD/lyPNDbse5a7nUiklEQ+iQc2f4aKBKyLhGQsF5oMXZI22MBvXfyRIzcoBTACD8FAPXRuCgpIshDizRTwUC6otA188zwStsA1BgTF9o2v7qBIWQ38sH8EDaCLITJo2VWrjylxlpXRuetzAqcAJE/u5MNZGg6KcscUZsl+F02cJMIo5dqYwoSyUJ6ilwljgS9A2KoZ9SXRSpjkH4ZM+t+cnaDjB4UpgkBXKmNnfAOhrQIW3hBF4xKgyyoTYSxUbuA6gvSrgFJl9X5mUofpOVKStAUMu0okm2O/gm0GR/X1I7HLoFcOASFqlN0+k7//gGLZ1omvs9rCizVXDH8AoshCHadtb4Dx0GVBHLC3TJzBNqIvojtKgKuVP9zh4yHdBK+6IMwKgtVAAqQRZ3su9d5s7KtmGoIIhuT3nIJoL3FuXII4PqsvHH2AwE1yQ/4h+kr1Zv1Q1QZ8G2x/syY+l/+awCrGArmerxhlR54EUbL8KbrCP23CwsZWAvvhw="
