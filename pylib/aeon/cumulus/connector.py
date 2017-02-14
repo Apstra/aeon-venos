@@ -30,7 +30,7 @@ class Connector(object):
                 self.hostname, port=self.port,
                 username=self.user, password=self.passwd)
 
-        except Exception as e:
+        except Exception:
             raise
 
     def close(self):

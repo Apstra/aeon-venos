@@ -6,7 +6,7 @@
 import pyeapi
 import socket
 
-from aeon.exceptions import ConfigError, CommandError
+from aeon.exceptions import ConfigError
 
 
 __all__ = ['Connector']
@@ -29,7 +29,6 @@ class Connector(object):
         self.eapi = pyeapi.connect(
             transport=self.proto, host=self.hostname,
             username=self.user, password=self.passwd)
-
 
     def execute(self, commands):
         commands = commands if isinstance(commands, list) else [commands]

@@ -3,8 +3,6 @@
 # This source code is licensed under End User License Agreement found in the
 # LICENSE file at http://www.apstra.com/community/eula
 
-from aeon import exceptions
-
 __all__ = ['_install_os']
 
 
@@ -55,7 +53,7 @@ class _install_os(object):
     # #####
     # ##### -------------------------------------------------------------------
 
-    def copy_from(self, location, timeout=10*60):
+    def copy_from(self, location, timeout=10 * 60):
         """
         This method will fetch the image; the fetch will happen from the
         device-side using the 'copy' command.  Note that the NXAPI appears to
@@ -66,6 +64,8 @@ class _install_os(object):
         :param location: URL to the location of the file.  This URL must be a valid source
         field to the NXOS 'copy' command
 
+        :keyword timeout: Timeout in seconds
+
         :return:
         """
 
@@ -75,7 +75,7 @@ class _install_os(object):
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
 
-    def run(self, timeout=10*60):
+    def run(self, timeout=10 * 60):
         """
         This will invoke the command to install the image, and then
         cause the device to reboot.

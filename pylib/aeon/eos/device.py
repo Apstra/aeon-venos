@@ -11,6 +11,7 @@ from aeon.eos.connector import Connector
 
 __all__ = ['Device']
 
+
 class Device(object):
     DEFAULT_PROBE_TIMEOUT = 3
     DEFAULT_USER = 'admin'
@@ -68,6 +69,3 @@ class Device(object):
         except:
             facts['fqdn'] = 'localhost'
             facts['hostname'] = 'localhost'
-
-
-
