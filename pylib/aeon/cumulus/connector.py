@@ -6,8 +6,6 @@
 import socket
 
 import paramiko
-from paramiko.ssh_exception import NoValidConnectionsError
-from aeon.exceptions import LoginNotReadyError, ConfigError, CommandError
 
 
 __all__ = ['Connector']
