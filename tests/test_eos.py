@@ -150,7 +150,8 @@ def test_eos_connector_execute(mock_eapi):
     passwd = 'test_passwd'
 
     con = connector.Connector(target, user=user, passwd=passwd)
-    con.execute(['test1', 'test2'])
+    results = con.execute(['test1', 'test2'])
+    assert results == ['test1', 'test2']
 
 
 @mock.patch('pylib.aeon.eos.connector.pyeapi.connect')
@@ -173,7 +174,7 @@ def test_eos_connector_configure_runtime_exception(mock_eapi):
     passwd = 'test_passwd'
 
     con = connector.Connector(target, user=user, passwd=passwd)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError) as e:
         con.configure('test')
 
 
@@ -188,4 +189,7 @@ def test_eos_connector_configure(mock_eapi):
     passwd = 'test_passwd'
 
     con = connector.Connector(target, user=user, passwd=passwd)
-    con.configure(['test1', 'test2'])
+    con.configure(['test1', 'test2', ''])
+    expected = [mock.call(host=target, password=passwd, transport='http', username=user),
+                mock.call().execute(['enable', 'configure', 'test1', 'test2'])]
+    assert mock_eapi.mock_calls == expected
