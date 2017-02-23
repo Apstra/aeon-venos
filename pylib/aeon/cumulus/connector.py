@@ -4,8 +4,8 @@
 # LICENSE file at http://www.apstra.com/community/eula
 
 import socket
-
 import paramiko
+from aeon.exceptions import LoginNotReadyError
 
 
 __all__ = ['Connector']
@@ -30,8 +30,8 @@ class Connector(object):
                 self.hostname, port=self.port,
                 username=self.user, password=self.passwd)
 
-        except Exception:
-            raise
+        except Exception as exc:
+            raise LoginNotReadyError(exc=exc, message='Unable to connect.')
 
     def close(self):
         self._client.close()
