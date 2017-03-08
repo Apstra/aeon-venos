@@ -30,11 +30,11 @@ class Connector(object):
             transport=self.proto, host=self.hostname,
             username=self.user, password=self.passwd)
 
-    def execute(self, commands):
+    def execute(self, commands, encoding='json'):
         commands = commands if isinstance(commands, list) else [commands]
         commands.insert(0, 'enable')
         try:
-            got = self.eapi.execute(commands)
+            got = self.eapi.execute(commands=commands, encoding=encoding)
         except Exception as exc:
             raise CommandError(exc=exc, commands=commands)
 
