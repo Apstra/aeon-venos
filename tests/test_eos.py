@@ -141,8 +141,8 @@ def test_eos_connector_execute_exception(mock_eapi):
 
 @mock.patch('pylib.aeon.eos.connector.pyeapi.connect')
 def test_eos_connector_execute(mock_eapi):
-    def mock_execute(*args):
-        return {'result': list(args)[0]}
+    def mock_execute(commands, encoding='json', **kwargs):
+        return {'result': commands}
 
     mock_eapi.return_value.execute.side_effect = mock_execute
     target = '1.1.1.1'
