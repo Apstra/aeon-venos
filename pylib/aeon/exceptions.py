@@ -33,9 +33,15 @@ class CommandError(Exception):
         self.exc = exc
         self.commands = commands
 
+    def __repr__(self):
+        return self.exc.message
+
 
 class LoginNotReadyError(Exception):
     def __init__(self, exc, message):
         super(LoginNotReadyError, self).__init__()
         self.exc = exc
         self.message = message
+
+    def __repr__(self):
+        return self.exc.message
