@@ -22,14 +22,14 @@ class TimeoutError(Exception):
 
 class ConfigError(Exception):
     def __init__(self, exc, contents):
-        super(ConfigError, self).__init__()
+        super(ConfigError, self).__init__(exc, contents)
         self.exc = exc
         self.contents = contents
 
 
 class CommandError(Exception):
     def __init__(self, exc, commands):
-        super(CommandError, self).__init__()
+        super(CommandError, self).__init__(exc, commands)
         self.exc = exc
         self.commands = commands
 
@@ -39,7 +39,7 @@ class CommandError(Exception):
 
 class LoginNotReadyError(Exception):
     def __init__(self, exc, message):
-        super(LoginNotReadyError, self).__init__()
+        super(LoginNotReadyError, self).__init__(exc, message)
         self.exc = exc
         self.message = message
 
