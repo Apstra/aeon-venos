@@ -28,7 +28,7 @@ class Device(BaseDevice):
         good, got = self.api.execute(['ip link show dev %s' % link_name])
         data = got[0]['stdout']
         macaddr = data.partition('link/ether ')[-1].split()[0]
-        return macaddr.replace(':', '').upper()
+        return macaddr.upper()
 
     def gather_facts(self):
 
