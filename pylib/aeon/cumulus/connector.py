@@ -12,8 +12,11 @@ __all__ = ['Connector']
 
 
 class Connector(object):
+    DEFAULT_PROTOCOL = 'ssh'
+
     def __init__(self, hostname, **kwargs):
         self.hostname = hostname
+        self.proto = kwargs.get('proto') or self.DEFAULT_PROTOCOL
         self.port = kwargs.get('port') or socket.getservbyname('ssh')
         self.user = kwargs.get('user')
         self.passwd = kwargs.get('passwd')

@@ -5,19 +5,15 @@
 
 import re
 
-from aeon import exceptions
-from aeon.utils.probe import probe
 from aeon.cumulus.connector import Connector
+from aeon.base.device import BaseDevice
 
 
 __all__ = ['Device']
 
 
-class Device(object):
+class Device(BaseDevice):
     OS_NAME = 'cumulus'
-    DEFAULT_PROBE_TIMEOUT = 3
-    DEFAULT_USER = 'admin'
-    DEFAULT_PASSWD = 'admin'
 
     def __init__(self, target, **kwargs):
         """
@@ -26,30 +22,13 @@ class Device(object):
             'user' : login user-name, defaults to "admin"
             'passwd': login password, defaults to "admin
         """
-        self.target = target
-        self.api = Connector(hostname=self.target,
-                             user=kwargs.get('user', self.DEFAULT_USER),
-                             passwd=kwargs.get('passwd', self.DEFAULT_PASSWD))
-
-        self.facts = {}
-
-        if 'no_probe' not in kwargs:
-            self.probe(**kwargs)
-
-        if 'no_gather_facts' not in kwargs:
-            self.gather_facts()
-
-    def probe(self, **kwargs):
-        timeout = kwargs.get('timeout') or self.DEFAULT_PROBE_TIMEOUT
-        ok, elapsed = probe(self.target, protocol='ssh', timeout=timeout)
-        if not ok:
-            raise exceptions.ProbeError()
+        BaseDevice.__init__(self, target, Connector, **kwargs)
 
     def _serial_from_link(self, link_name):
         good, got = self.api.execute(['ip link show dev %s' % link_name])
         data = got[0]['stdout']
         macaddr = data.partition('link/ether ')[-1].split()[0]
-        return macaddr.replace(':', '').upper()
+        return macaddr.upper()
 
     def gather_facts(self):
 
@@ -88,7 +67,7 @@ class Device(object):
                 tag.strip(): value
                 for tag, value in scanner.findall(syseeprom)}
 
-            facts['mac_address'] = self._serial_from_link("eth0")
+            facts['mac_address'] = decoded.get('Base MAC Address', 'no-mac-addr')
             facts['vendor'] = decoded.get('Vendor Name', 'no-vendor-name')
             facts['serial_number'] = decoded.get('Serial Number', 'no-serial-number')
             facts['hw_model'] = decoded.get('Product Name', 'no-product-name')

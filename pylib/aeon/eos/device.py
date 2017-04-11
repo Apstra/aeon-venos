@@ -4,18 +4,15 @@
 # LICENSE file at http://www.apstra.com/community/eula
 
 
-from aeon import exceptions
-from aeon.utils.probe import probe
 from aeon.eos.connector import Connector
+from aeon.base.device import BaseDevice
 
 
 __all__ = ['Device']
 
 
-class Device(object):
-    DEFAULT_PROBE_TIMEOUT = 3
-    DEFAULT_USER = 'admin'
-    DEFAULT_PASSWD = 'admin'
+class Device(BaseDevice):
+    OS_NAME = 'eos'
 
     def __init__(self, target, **kwargs):
         """
@@ -24,24 +21,7 @@ class Device(object):
             'user' : login user-name, defaults to "admin"
             'passwd': login password, defaults to "admin
         """
-        self.target = target
-        self.api = Connector(hostname=self.target,
-                             user=kwargs.get('user', self.DEFAULT_USER),
-                             passwd=kwargs.get('passwd', self.DEFAULT_PASSWD))
-
-        self.facts = {}
-
-        if 'no_probe' not in kwargs:
-            self.probe(**kwargs)
-
-        if 'no_gather_facts' not in kwargs:
-            self.gather_facts()
-
-    def probe(self, **kwargs):
-        timeout = kwargs.get('timeout') or self.DEFAULT_PROBE_TIMEOUT
-        ok, elapsed = probe(self.target, protocol=self.api.proto, timeout=timeout)
-        if not ok:
-            raise exceptions.ProbeError()
+        BaseDevice.__init__(self, target, Connector, **kwargs)
 
     def gather_facts(self):
 
@@ -49,13 +29,14 @@ class Device(object):
         got_ver = self.api.execute('show version')
 
         facts['vendor'] = 'arista'
-        facts['os'] = 'eos'
+        facts['os_name'] = self.OS_NAME
         facts['os_version'] = got_ver['version']
         facts['hw_model'] = got_ver['modelName']
         facts['hw_version'] = got_ver['hardwareRevision']
         facts['hw_part_number'] = None
         facts['hw_part_version'] = None
         facts['chassis_id'] = None
+        facts['mac_address'] = got_ver['systemMacAddress']
 
         facts['virtual'] = bool('vEOS' == facts['hw_model'])
 

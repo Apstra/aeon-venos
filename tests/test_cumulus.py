@@ -14,7 +14,7 @@ g_facts = {
     'virtual': False,
     'hw_model': 'Cumulus1000',
     'vendor': 'Cumulus',
-    'mac_address': '01234567890A',
+    'mac_address': '01:23:45:67:89:0a',
     'os_name': 'cumulus',
     'service_tag': 'no-service-tag'
 }
@@ -26,7 +26,8 @@ virt2_facts = {
     'vendor': 'CUMULUS-NETWORKS',
     'service_tag': None,
     'hw_version': None,
-    'serial_number': g_facts['mac_address'],
+    'serial_number': g_facts['mac_address'].upper(),
+    'mac_address': g_facts['mac_address'].upper()
 }
 
 # Cumulus 2.x Virtual device
@@ -54,15 +55,16 @@ ip_link_show_dev_eth0 = '''
 def cumulus_connector(mock_ssh):
     hostname = '1.1.1.1'
     port = 22
+    proto = 'ssh'
     user = 'test_user'
     passwd = 'test_passwd'
-    con = connector.Connector(hostname, port=port, user=user, passwd=passwd)
+    con = connector.Connector(hostname, port=port, proto=proto, user=user, passwd=passwd)
     return con
 
 
-@mock.patch('pylib.aeon.cumulus.device.probe')
+@mock.patch('pylib.aeon.cumulus.device.BaseDevice.probe')
 @mock.patch('pylib.aeon.cumulus.device.Connector')
-@pytest.fixture(params=[g_facts, g_facts_virt2])
+@pytest.fixture(params=[g_facts, g_facts_virt2], ids=['physical', 'virtual'])
 def cumulus_device(mock_connector, mock_probe, request):
     def mock_execute(args, **kwargs):
         results = []
@@ -162,20 +164,12 @@ def test_cumulus_device(cumulus_device):
     dev = cumulus_device
     assert dev.OS_NAME == 'cumulus'
     assert dev.DEFAULT_PROBE_TIMEOUT == 3
-    assert dev.DEFAULT_USER == 'admin'
-    assert dev.DEFAULT_PASSWD == 'admin'
+    assert dev.user == 'test_user'
+    assert dev.passwd == 'test_passwd'
     if dev.facts['virtual']:
         assert dev.facts == g_facts_virt2
     else:
         assert dev.facts == g_facts
 
 
-@mock.patch('pylib.aeon.cumulus.device.probe')
-@mock.patch('pylib.aeon.cumulus.device.Connector')
-def test_cumulus_device_probeerror(mock_connector, mock_probe):
-    mock_probe.return_value = False, 10
-    target = '1.1.1.1'
-    user = 'test_user'
-    passwd = 'test_passwd'
-    with pytest.raises(ProbeError):
-        dev = device.Device(target, user=user, passwd=passwd)
+
