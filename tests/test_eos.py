@@ -15,13 +15,14 @@ g_facts = {'hw_version': '1.0.1',
            'hw_model': 'Arista1000',
            'vendor': 'arista',
            'hw_part_version': None,
-           'os': 'eos'
+           'os_name': 'eos',
+            'mac_address': '01:23:45:67:89:0a',
            }
 
 show_ver_return = {'version': g_facts['os_version'],
     'modelName': g_facts['hw_model'],
     'hardwareRevision': g_facts['hw_version'],
-    'systemMacAddress': '00:11:22:33:44:55:66:77',
+    'systemMacAddress': '01:23:45:67:89:0a',
     'serialNumber': g_facts['serial_number']}
 
 show_hostname_return = {
@@ -35,15 +36,15 @@ show_hostname_return = {
 def eos_connector(mock_eapi):
     hostname = '1.1.1.1'
     port = 22
+    proto = 'ssh'
     user = 'test_user'
     passwd = 'test_passwd'
-    con = connector.Connector(hostname, port=port, user=user, passwd=passwd)
+    con = connector.Connector(hostname, port=port, proto=proto, user=user, passwd=passwd)
     return con
 
-
-@mock.patch('pylib.aeon.eos.device.probe')
+@mock.patch('pylib.aeon.cumulus.device.BaseDevice.probe')
 @mock.patch('pylib.aeon.eos.device.Connector')
-@pytest.fixture
+@pytest.fixture()
 def eos_device(mock_connector, mock_probe):
     def mock_execute(*args, **kwargs):
         if args[0] == 'show version':
@@ -51,6 +52,7 @@ def eos_device(mock_connector, mock_probe):
         elif args[0] == 'show hostname':
             return show_hostname_return
     mock_connector.return_value.execute.side_effect = mock_execute
+    mock_connector.return_value.proto='ssh'
     mock_probe.return_value = True, 10
     target = '1.1.1.1'
     user = 'test_user'
@@ -70,43 +72,9 @@ def test_eos_connector(eos_connector):
 def test_eos_device(eos_device):
     dev = eos_device
     assert dev.DEFAULT_PROBE_TIMEOUT == 3
-    assert dev.DEFAULT_USER == 'admin'
-    assert dev.DEFAULT_PASSWD == 'admin'
+    assert dev.user == 'test_user'
+    assert dev.passwd == 'test_passwd'
     assert dev.facts == g_facts
-
-
-@mock.patch('pylib.aeon.eos.device.probe')
-@mock.patch('pylib.aeon.eos.device.Connector')
-def test_eos_device_probe_error(mock_connector, mock_probe):
-    def mock_execute(*args, **kwargs):
-        if args[0] == 'show version':
-            return show_ver_return
-        elif args[0] == 'show hostname':
-            return show_hostname_return
-    mock_connector.return_value.execute.side_effect = mock_execute
-    mock_probe.return_value = False, 10
-    target = '1.1.1.1'
-    user = 'test_user'
-    passwd = 'test_passwd'
-    with pytest.raises(ProbeError) as e:
-        dev = device.Device(target, user=user, passwd=passwd)
-
-
-@mock.patch('pylib.aeon.eos.device.probe')
-@mock.patch('pylib.aeon.eos.device.Connector')
-def test_eos_device_no_fqdn_no_hostname(mock_connector, mock_probe):
-    def mock_execute(*args, **kwargs):
-        if args[0] == 'show version':
-            return show_ver_return
-        elif args[0] == 'show hostname':
-            raise Exception
-    mock_connector.return_value.execute.side_effect = mock_execute
-    mock_probe.return_value = True, 10
-    target = '1.1.1.1'
-    user = 'test_user'
-    passwd = 'test_passwd'
-    dev = device.Device(target, user=user, passwd=passwd)
-    assert dev.facts['fqdn'] == dev.facts['hostname'] == 'localhost'
 
 
 def test_eos_exception():

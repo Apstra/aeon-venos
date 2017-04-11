@@ -7,16 +7,15 @@
 from functools import partial
 import importlib
 
-from aeon.utils.probe import probe
+from aeon.base.device import BaseDevice
 from aeon.nxos.connector import NxosConnector as Connector
-from aeon import exceptions
 
 
 __all__ = ['Device']
 
 
-class Device(object):
-    DEFAULT_PROBE_TIMEOUT = 3
+class Device(BaseDevice):
+    OS_NAME = 'nxos'
 
     def __init__(self, target, **kwargs):
         """
@@ -25,26 +24,7 @@ class Device(object):
             'user' : login user-name, defaults to "admin"
             'passwd': login password, defaults to "admin
         """
-        self.target = target
-
-        user = kwargs.get('user', 'admin')
-        passwd = kwargs.get('passwd', 'admin')
-
-        self.api = Connector(hostname=self.target, user=user, passwd=passwd)
-
-        self.facts = {}
-
-        if 'no_probe' not in kwargs:
-            self.probe(**kwargs)
-
-        if 'no_gather_facts' not in kwargs:
-            self.gather_facts()
-
-    def probe(self, **kwargs):
-        timeout = kwargs.get('timeout') or self.DEFAULT_PROBE_TIMEOUT
-        ok, elapsed = probe(self.target, protocol=self.api.proto, timeout=timeout)
-        if not ok:
-            raise exceptions.ProbeError()
+        BaseDevice.__init__(self, target, Connector, **kwargs)
 
     def close(self):
         # nothing to do for close at this time, yo!
@@ -54,9 +34,6 @@ class Device(object):
         exec_show = partial(self.api.exec_opcmd, resp_fmt='json')
 
         facts = self.facts
-
-        facts['vendor'] = 'cisco'
-        facts['os'] = 'nxos'
 
         got = exec_show('show hostname')
         facts['fqdn'] = got['hostname']
@@ -81,6 +58,10 @@ class Device(object):
         facts['hw_part_number'] = row['part_num']
         facts['hw_part_version'] = row['part_revision']
         facts['hw_version'] = row['hw_ver']
+
+        got = exec_show('show interface mgmt0')
+        raw_mac = got['TABLE_interface']['ROW_interface']['eth_hw_addr'].replace('.', '')
+        facts['mac_address'] = ':'.join(s.encode('hex') for s in raw_mac.decode('hex'))
 
     def __getattr__(self, item):
         # ##
