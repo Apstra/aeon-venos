@@ -26,8 +26,8 @@ virt2_facts = {
     'vendor': 'CUMULUS-NETWORKS',
     'service_tag': None,
     'hw_version': None,
-    'serial_number': g_facts['mac_address'].replace(':', '').upper(),
-    'mac_address': g_facts['mac_address'].replace(':', '').upper()
+    'serial_number': g_facts['mac_address'].upper(),
+    'mac_address': g_facts['mac_address'].upper()
 }
 
 # Cumulus 2.x Virtual device
