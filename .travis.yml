@@ -4,14 +4,15 @@ install:
 script:
 - tox
 env:
-  - TOXENV=py27
-  - TOXENV=flake8
-  - TOXENV=coverage_travis
+- TOXENV=py27
+- TOXENV=flake8
+- TOXENV=coverage_travis
 deploy:
   provider: pypi
-  distributions: sdist
-  user: "apstra"
+  user: apstra
   password:
-    secure: "Edb1AeAlSpqGb7inEVCkpNPSbqqlPCMIHvahUg57JV+BmHJzbuZm11wVEkHwP+Bgxi/0Gl7WfY0p1z6OXhyZhnzkx1XJYE2wEOB/VoBq/I+6iMAYnlRM7X4gRJGo6yZNvr7Uj1ihD3oKLG7zfpQpMBmS6lTVA1f+G8jjFd9BYZZ4Rzf3UD/lyPNDbse5a7nUiklEQ+iQc2f4aKBKyLhGQsF5oMXZI22MBvXfyRIzcoBTACD8FAPXRuCgpIshDizRTwUC6otA188zwStsA1BgTF9o2v7qBIWQ38sH8EDaCLITJo2VWrjylxlpXRuetzAqcAJE/u5MNZGg6KcscUZsl+F02cJMIo5dqYwoSyUJ6ilwljgS9A2KoZ9SXRSpjkH4ZM+t+cnaDjB4UpgkBXKmNnfAOhrQIW3hBF4xKgyyoTYSxUbuA6gvSrgFJl9X5mUofpOVKStAUMu0okm2O/gm0GR/X1I7HLoFcOASFqlN0+k7//gGLZ1omvs9rCizVXDH8AoshCHadtb4Dx0GVBHLC3TJzBNqIvojtKgKuVP9zh4yHdBK+6IMwKgtVAAqQRZ3su9d5s7KtmGoIIhuT3nIJoL3FuXII4PqsvHH2AwE1yQ/4h+kr1Zv1Q1QZ8G2x/syY+l/+awCrGArmerxhlR54EUbL8KbrCP23CwsZWAvvhw="
+    secure: fTcNPsLy8OFHCUbjVrH5MH6cgDO5HcUL/hDxcn9OLKyqiIXDG6H/5yMLvqt04FhUo9Tv8YarOd/tDkhLDXuHEgf0RTAdsHIKh30p137F9lRUiFN/NccQGIRTiwXTs5aw4YoY86Wry5zpNhDBzCODHKfR8phL9naRwFONgcv4r2eLco6SeL+Ggwv5CewvcXFQeC2e7QmYXcDLFoPmkZuYR5DbujAAbUGaD8ngODCBC9DS8gfFpathdavCw+3jSaxPpXM9r6EbuiJ9sEdI2eIbUsJnHYczTXmoRdfKulJP8kZVGkvbFEeBIapr8K19fKQpvEtweseMVeCh+XEMzven2frCIOWW4uDhzc3lMhDQdpJrkPHkddmJE2HFGaJLoNWLAey1IeOkF/l6tmsx1yJ1zEcMt7jMfSSUtv9WLOeUxuncCjs989ki0D+J0Iym0gqJHY0Djf9R1FcRi+oNWNXtdP2+bGvyl/dPLsmXb+NrbO9cn6HZYEVTL6JhQeKioH4Mvs3UyJcdd96PNDBUwVu6oUkDgi4zpyhQ+GPp4WwmJ+kn9ryKlAx9JAEtinygh7m4IuQGftqhIixEw/QShuk8cMR+6N17pZqSPRhGq701+XxgJ3o5koaG3ZmHcMq4wo7i+Rj/BZ/gDDemt49FSTlLuHRCfCdgSqg5wl5VKWVqj0o=
   on:
     tags: true
+    distributions: sdist bdist_wheel
+    repo: Apstra/aeon-venos
