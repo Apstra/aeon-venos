@@ -29,7 +29,7 @@ setup(
     package_dir={'': libdir},
     packages=packages,
     install_requires=install_reqs,
-    scripts=glob('bin/*'),
+    scripts=glob('pylib/bin/*'),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
