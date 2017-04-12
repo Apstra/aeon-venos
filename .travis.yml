@@ -8,6 +8,7 @@ env:
 - TOXENV=flake8
 - TOXENV=coverage_travis
 deploy:
+  server: https://testpypi.python.org/pypi
   provider: pypi
   user: apstra
   password:
@@ -17,4 +18,4 @@ deploy:
     distributions: sdist bdist_wheel
     repo: Apstra/aeon-venos
     branch: pypi_deploy
-    server: https://testpypi.python.org/pypi
+    condition: $TOXENV = py27
