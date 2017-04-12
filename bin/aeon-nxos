@@ -1,1 +1,326 @@
-../pylib/aeon/nxos/bin/aeon-nxos
+#!/usr/bin/env python
+
+# Copyright 2014-present, Apstra, Inc. All rights reserved.
+#
+# This source code is licensed under End User License Agreement found in the
+# LICENSE file at http://www.apstra.com/community/eula
+
+import sys
+import json
+
+import aeon.nxos as nxos
+import aeon.nxos.exceptions as NxosExc
+from aeon.utils.stdargs import ArgumentParser, Stdargs
+from aeon.exceptions import ProbeError, UnauthorizedError, TimeoutError
+
+_PROGNAME = 'aeon-nxos'
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           Command Line Arguments
+# #####
+# ##### -----------------------------------------------------------------------
+
+def setup_cli():
+
+    cli = Stdargs(prog=_PROGNAME,
+                  description="Aeon NXOS command utility",
+                  add_help=True)
+
+    psr = cli.psr
+    psr_subcmd = psr.add_subparsers(dest='subcmd')
+
+    # ##### -------------------------------------------------------------------
+
+    def facts():
+        subcmd = psr_subcmd.add_parser(
+            'facts',
+            help='Return the target facts')
+
+        subcmd.add_argument(
+            '--brief', help='Only the bare minimum facts', action='store_true')
+
+    facts()
+
+    # ##### -------------------------------------------------------------------
+
+    def run():
+        sub = psr_subcmd.add_parser('run', help='Run CLI operational command')
+        sub.add_argument('command', nargs=1, help='command string')
+
+    run()
+
+    # ##### -------------------------------------------------------------------
+
+    def guestshell():
+        gs = psr_subcmd.add_parser(
+            'guestshell',
+            help='Guestshell commands')
+
+        gs_subs = gs.add_subparsers(dest='guestshell')
+
+        sudoers = gs_subs.add_parser('sudoers', help='sudo control')
+        sudoers.add_argument(
+            '--enable', help='enable sudo',
+            dest='sudo_enable',
+            action='store_const', const=True)
+
+        sudoers.add_argument(
+            '--disable',
+            dest='sudo_enable',
+            action='store_const', const=False)
+
+        run = gs_subs.add_parser('run', help='run command in guestshell')
+        run.add_argument(
+            'command', nargs=1,
+            help='command string')
+        run.add_argument(
+            '--timeout', type=int,
+            help='command timeout, 0=ignore')
+
+        enable = gs_subs.add_parser(
+            'enable', help='enable guestshell')
+
+        enable.add_argument(
+            '--wipe', help='destory and rebuild guestshell',
+            action='store_true')
+        enable.add_argument(
+            '--maxsize', help='enable guestshell with maximum resources',
+            action='store_true')
+        enable.add_argument('--cpu', type=int, help='CPU resource value')
+        enable.add_argument('--memory', type=int, help='Memory resource value')
+        enable.add_argument('--disk', type=int, help='Disk resource value')
+
+        gs_subs.add_parser('show', help='show guestshell details')
+        gs_subs.add_parser('disable', help='dsiable guestshell')
+        gs_subs.add_parser('destroy', help='destroy guestshell')
+
+    guestshell()
+
+    # ##### -------------------------------------------------------------------
+
+    def rcopy():
+        rc = psr_subcmd.add_parser('rcopy', help='Remote copy commands')
+        rc.add_argument(
+            'from_to', nargs=1, help='<from-url> to <local-filesys>')
+        rc.add_argument(
+            '--md5sum', help='verify this md5sum after copy')
+        rc.add_argument(
+            '--vrf_name', help='VRF name',
+            default='management')
+        rc.add_argument(
+            '--timeout', help='timeout/s to complete copy',
+            default=60)
+
+    rcopy()
+
+    # ##### -------------------------------------------------------------------
+
+    def installos():
+        install = psr_subcmd.add_parser('installos', help='Install NXOS software')
+
+    installos()
+
+    return cli
+
+g_cli = setup_cli()
+g_cli_args = g_cli.parse_args()
+g_log = g_cli.log
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           Utility Functions
+# #####
+# ##### -----------------------------------------------------------------------
+
+def exit_results(results, exit_error=None):
+    json.dump(results, fp=sys.stdout)
+    sys.exit(0 if results['ok'] is True else exit_error or 1)
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           facts
+# #####
+# ##### -----------------------------------------------------------------------
+
+def do_facts(cli, dev):
+    if cli.args.brief:
+        facts = dict(
+            os_version=dev.facts['os_version'],
+            hw_model=dev.facts['hw_model'],
+            serial_number=dev.facts['serial_number'])
+    else:
+        facts = dev.facts
+
+    exit_results(dict(ok=True, facts=facts))
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           run
+# #####
+# ##### -----------------------------------------------------------------------
+
+def do_run(cli, dev):
+    got = dev.api.exec_opcmd(cli.args.command[0], msg_type='cli_show_ascii')
+    exit_results(dict(ok=True, results=got))
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           guestshell
+# #####
+# ##### -----------------------------------------------------------------------
+
+def do_guestshell(cli, dev):
+    dev.guestshell()
+
+    def do_gs_run():
+        try:
+            got = dev.api.exec_opcmd(
+                "guestshell run {cmd}".format(cmd=cli.args.command[0]),
+                msg_type='cli_show_ascii',
+                timeout=g_cli.args.timeout)
+
+            exit_results(dict(ok=True, stdout=got))
+
+        except Exception as exc:
+            # @@@ TO-DO - handle this case
+            exit_results(dict(
+                ok=False,
+                message='unable to run command "%s"' % cli.args.command[0]))
+
+    def do_gs_disable():
+        dev.guestshell.disable()
+
+    def do_gs_show():
+        exit_results(dict(
+            ok=True,
+            state=dev.guestshell.state,
+            cpu=dev.guestshell.size.cpu,
+            disk=dev.guestshell.size.disk,
+            memory=dev.guestshell.size.memory))
+
+    def do_gs_destroy():
+        dev.guestshell.destroy()
+
+    def do_gs_enable():
+        if cli.args.wipe is True:
+            dev.guestshell.destroy()
+
+        if cli.args.maxsize is True:
+            cli.args.cpu = dev.guestshell.sz_max['cpu']
+            cli.args.disk = dev.guestshell.sz_max['disk']
+            cli.args.memory = dev.guestshell.sz_max['memory']
+
+        if 'Activated' == dev.guestshell.state:
+            dev.guestshell.disable()
+
+        if cli.args.cpu is not None:
+            dev.guestshell.resize_cpu(cli.args.cpu)
+        if cli.args.disk is not None:
+            dev.guestshell.resize_disk(cli.args.disk)
+        if cli.args.memory is not None:
+            dev.guestshell.resize_memory(cli.args.memory)
+
+        dev.guestshell.enable()
+
+    def do_gs_sudoers():
+        dev.guestshell.sudoers(enable=cli.args.sudo_enable)
+
+    _jmp = dict(
+        show=do_gs_show,
+        run=do_gs_run,
+        disable=do_gs_disable,
+        enable=do_gs_enable,
+        sudoers=do_gs_sudoers,
+        destroy=do_gs_destroy
+    )
+
+    _jmp[g_cli.args.guestshell]()
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           rcopy
+# #####
+# ##### -----------------------------------------------------------------------
+
+def do_rcopy(cli, dev):
+
+    cmd = 'copy {from_to} vrf {vrf_name}'.format(
+        from_to=cli.args.from_to[0],
+        vrf_name=cli.args.vrf_name)
+
+    try:
+        dev.api.exec_opcmd(
+            cmd, msg_type='cli_show_ascii',
+            timeout=cli.args.timeout)
+
+    except NxosExc.NxosException as exc:
+        exit_results(dict(
+            ok=False,
+            copy_command=cmd,
+            timeout=cli.args.timeout,
+            message=exc.message))
+
+    exit_results(dict(ok=True))
+
+
+def do_installos():
+    pass
+
+
+# ##### -----------------------------------------------------------------------
+# #####
+# #####                           --- MAIN ---
+# #####
+# ##### -----------------------------------------------------------------------
+
+def start(cli, dev):
+
+    def unknown(*args):
+        exit_results(dict(
+            ok=False,
+            error_type='args',
+            message='Unknown command requested: {}'.format(g_cli_args.subcmd)
+        ))
+
+    _jmp = {
+        'facts': do_facts,
+        'guestshell': do_guestshell,
+        'rcopy': do_rcopy,
+        'run': do_run,
+        'installos': do_installos
+    }
+
+    _jmp.get(g_cli_args.subcmd, unknown)(cli, dev)
+
+
+def main():
+    try:
+        dev = nxos.Device(
+            target=g_cli.target,
+            user=g_cli.user,
+            passwd=g_cli.passwd)
+
+    except UnauthorizedError:
+        exit_results(dict(
+            ok=False,
+            error_type='login',
+            message='Unauthorized - check username/password'))
+
+    except ProbeError:
+        exit_results(dict(
+            ok=False,
+            error_type='login',
+            message='Failed to probe target %s' % g_cli.target))
+
+    else:
+        start(g_cli, dev)
+
+if '__main__' == __name__:
+    main()
