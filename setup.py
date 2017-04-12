@@ -19,7 +19,7 @@ packages = find_packages(libdir)
 setup(
     name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.5.8",
+    version="0.5.9",
     author="Jeremy Schulman",
     url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
@@ -29,7 +29,7 @@ setup(
     package_dir={'': libdir},
     packages=packages,
     install_requires=install_reqs,
-    scripts=glob('pylib/bin/*'),
+    scripts=glob('bin/*'),
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
