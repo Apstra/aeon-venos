@@ -113,7 +113,14 @@ class _guestshell(object):
         if 'None' == self.state:
             return
 
+        if 'Activating' == self.state:
+            self._wait_state('Activated')
+
+        if 'Deactivating' == self.state:
+            self._wait_state('Deactivated')
+
         self.guestshell('guestshell destroy')
+
         self._wait_state('None')
 
     def disable(self):
