@@ -163,7 +163,7 @@ def test_cumulus_connector_execute(mock_ssh):
 def test_cumulus_device(cumulus_device):
     dev = cumulus_device
     assert dev.OS_NAME == 'cumulus'
-    assert dev.DEFAULT_PROBE_TIMEOUT == 3
+    assert dev.DEFAULT_PROBE_TIMEOUT == 10
     assert dev.user == 'test_user'
     assert dev.passwd == 'test_passwd'
     if dev.facts['virtual']:
