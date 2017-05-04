@@ -191,7 +191,7 @@ def do_guestshell(cli, dev):
             # @@@ TO-DO - handle this case
             exit_results(dict(
                 ok=False,
-                message='unable to run command "%s"' % cli.args.command[0]))
+                message='unable to run command "{command}", error was: "{error}"'.format(command=cli.args.command[0], error=exc)))
 
     def do_gs_disable():
         dev.guestshell.disable()

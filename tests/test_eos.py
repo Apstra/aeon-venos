@@ -71,7 +71,7 @@ def test_eos_connector(eos_connector):
 
 def test_eos_device(eos_device):
     dev = eos_device
-    assert dev.DEFAULT_PROBE_TIMEOUT == 3
+    assert dev.DEFAULT_PROBE_TIMEOUT == 10
     assert dev.user == 'test_user'
     assert dev.passwd == 'test_passwd'
     assert dev.facts == g_facts
