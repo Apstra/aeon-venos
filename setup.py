@@ -7,19 +7,24 @@
 
 from setuptools import setup, find_packages
 from glob import glob
+from os import path
 
-# parse requirements
-req_lines = [line.strip() for line in open(
-    'requirements.txt').readlines()]
-install_reqs = list(filter(None, req_lines))
+
+def requirements(filename):
+    return filter(None, [
+        line.strip()
+        for line in open(filename).readlines()])
+
 
 libdir = 'pylib'
+aeondir = path.join(libdir, 'aeon')
+
 packages = find_packages(libdir)
 
 setup(
     name="aeon-venos",
     namespace_packages=['aeon'],
-    version="0.5.7",
+    version="0.6.0",
     author="Jeremy Schulman",
     url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
@@ -28,7 +33,16 @@ setup(
     keywords="networking automation vendor-agnostic",
     package_dir={'': libdir},
     packages=packages,
-    install_requires=install_reqs,
+    extras_require={
+        "eos": requirements(
+            path.join(aeondir, "eos", "requirements.txt")),
+        "nxos": requirements(
+            path.join(aeondir, "nxos", "requirements.txt")),
+        "cumulus": requirements(
+            path.join(aeondir, "cumulus", "requirements.txt")),
+        "ubuntu": requirements(
+            path.join(aeondir, "cumulus", "requirements.txt"))
+    },
     scripts=glob('bin/*'),
     classifiers=[
         'Development Status :: 3 - Alpha',

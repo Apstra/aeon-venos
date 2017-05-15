@@ -1,4 +1,0 @@
-requests
-lxml
-pyeapi
-paramiko<2.0.0
