@@ -21,11 +21,12 @@ class BaseDevice(object):
             'passwd': login password, defaults to "admin
         """
         self.target = target
-        self.port = None
+        self.port = kwargs.get('port')
         self.user = kwargs.get('user', 'admin')
         self.passwd = kwargs.get('passwd', 'admin')
         self.facts = {}
-        self.api = connector(hostname=target, user=self.user, passwd=self.passwd)
+
+        self.api = connector(hostname=target, **kwargs)
 
         if 'no_probe' not in kwargs:
             self.probe()

@@ -17,13 +17,11 @@ def requirements(filename):
 
 
 libdir = 'pylib'
-aeondir = path.join(libdir, 'aeon')
-
+aeondir = 'pylib/aeon'
 packages = find_packages(libdir)
 
 setup(
     name="aeon-venos",
-    namespace_packages=['aeon'],
     version="0.6.0",
     author="Jeremy Schulman",
     url='https://github.com/Apstra/aeon-venos',
