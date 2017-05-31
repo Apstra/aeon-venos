@@ -11,7 +11,7 @@ from aeon.exceptions import ProbeError
 
 
 class BaseDevice(object):
-    DEFAULT_PROBE_TIMEOUT = 3
+    DEFAULT_PROBE_TIMEOUT = 10
 
     def __init__(self, target, connector, **kwargs):
         """
@@ -24,8 +24,9 @@ class BaseDevice(object):
         self.port = kwargs.get('port')
         self.user = kwargs.get('user', 'admin')
         self.passwd = kwargs.get('passwd', 'admin')
+        self.timeout = kwargs.get('timeout', self.DEFAULT_PROBE_TIMEOUT)
         self.facts = {}
-
+        
         self.api = connector(hostname=target, **kwargs)
 
         if 'no_probe' not in kwargs:
@@ -43,9 +44,8 @@ class BaseDevice(object):
 
     def probe(self):
         interval = 1
-        timeout = self.DEFAULT_PROBE_TIMEOUT
         start = datetime.datetime.now()
-        end = start + datetime.timedelta(seconds=timeout)
+        end = start + datetime.timedelta(seconds=self.timeout)
 
         port = self.port or socket.getservbyname(self.api.proto)
 
@@ -62,7 +62,7 @@ class BaseDevice(object):
                 time.sleep(interval)
                 pass
         # Raise ProbeError if unable to reach in time allotted
-        raise ProbeError('Unable to reach device within %s seconds' % timeout)
+        raise ProbeError('Unable to reach device within %s seconds' % self.timeout)
 
     def __repr__(self):
         return 'Device(%r)' % self.target
