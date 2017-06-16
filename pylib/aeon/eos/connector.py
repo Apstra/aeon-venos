@@ -11,6 +11,7 @@ from aeon.exceptions import ConfigError, CommandError
 
 __all__ = ['Connector']
 
+EAPI_SOCKET_PATH = '/host_var_run/command-api.sock'
 
 class Connector(object):
     DEFAULT_PROTOCOL = 'http'
@@ -26,9 +27,10 @@ class Connector(object):
         self.user = kwargs.get('user')
         self.passwd = kwargs.get('passwd')
 
-        self.eapi = pyeapi.connect(
-            transport=self.proto, host=self.hostname,
-            username=self.user, password=self.passwd)
+        self.eapi = pyeapi.make_connection(
+                path=EAPI_SOCKET_PATH,
+                transport=self.proto, host=self.hostname,
+                username=self.user, password=self.passwd)
 
     def execute(self, commands, encoding='json'):
         commands = commands if isinstance(commands, list) else [commands]
