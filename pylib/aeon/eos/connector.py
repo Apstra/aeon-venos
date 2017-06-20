@@ -5,6 +5,7 @@
 
 import pyeapi
 import socket
+from copy import deepcopy
 
 from aeon.exceptions import ConfigError, CommandError
 
@@ -31,8 +32,16 @@ class Connector(object):
             username=self.user, password=self.passwd)
 
     def execute(self, commands, encoding='json'):
+
+        # Make a copy of commands so that commands object isn't mutated outside of this function
+        commands = deepcopy(commands)
+
+        # Convert to list if not already a list
         commands = commands if isinstance(commands, list) else [commands]
-        commands.insert(0, 'enable')
+
+        # Add 'enable' if not the first enty in the commands list
+        if commands[0] != 'enable':
+            commands.insert(0, 'enable')
         try:
             got = self.eapi.execute(commands=commands, encoding=encoding)
         except Exception as exc:
