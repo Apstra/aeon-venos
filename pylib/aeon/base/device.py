@@ -26,7 +26,6 @@ class BaseDevice(object):
         self.passwd = kwargs.get('passwd', 'admin')
         self.timeout = kwargs.get('timeout', self.DEFAULT_PROBE_TIMEOUT)
         self.facts = {}
-        
         self.api = connector(hostname=target, **kwargs)
 
         if 'no_probe' not in kwargs:
