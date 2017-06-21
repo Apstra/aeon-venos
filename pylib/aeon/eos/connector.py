@@ -23,7 +23,14 @@ class Connector(object):
 
         self.hostname = hostname
         self.proto = kwargs.get('proto') or self.DEFAULT_PROTOCOL
-        self.port = kwargs.get('port') or socket.getservbyname(self.proto)
+        self.port = kwargs.get('port')
+
+        # explicit check for None, since setting port to 0 is
+        # valid for on-box EOS.
+
+        if self.port is None:
+            self.port = socket.getservbyname(self.proto)
+
         self.user = kwargs.get('user')
         self.passwd = kwargs.get('passwd')
 
