@@ -32,14 +32,10 @@ setup(
     package_dir={'': libdir},
     packages=packages,
     extras_require={
-        "eos": requirements(
-            path.join(aeondir, "eos", "requirements.txt")),
-        "nxos": requirements(
-            path.join(aeondir, "nxos", "requirements.txt")),
-        "cumulus": requirements(
-            path.join(aeondir, "cumulus", "requirements.txt")),
-        "ubuntu": requirements(
-            path.join(aeondir, "cumulus", "requirements.txt"))
+        "eos": ["pyeapi"],
+        "nxos": ["lxml", "requests"],
+        "cumulus": ["paramiko<2.0.0"],
+        "ubuntu": ["paramiko<2.0.0"]
     },
     scripts=glob('bin/*'),
     classifiers=[
