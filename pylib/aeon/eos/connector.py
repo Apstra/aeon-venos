@@ -34,9 +34,14 @@ class Connector(object):
         self.user = kwargs.get('user')
         self.passwd = kwargs.get('passwd')
 
-        self.eapi = pyeapi.connect(
-            transport=self.proto, host=self.hostname,
-            username=self.user, password=self.passwd)
+        if self.proto == 'socket':
+            self.eapi = pyeapi.client.make_connection(
+                'socket', username=self.user, password=self.passwd,
+                **kwargs.get('socket_opts'))
+        else:
+            self.eapi = pyeapi.connect(
+                transport=self.proto, host=self.hostname,
+                username=self.user, password=self.passwd)
 
     def execute(self, commands, encoding='json'):
 

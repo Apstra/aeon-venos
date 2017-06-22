@@ -22,7 +22,7 @@ packages = find_packages(libdir)
 
 setup(
     name="aeon-venos",
-    version="0.6.0",
+    version="0.7.0",
     author="Jeremy Schulman",
     url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
