@@ -7,6 +7,7 @@
 
 import sys
 import json
+from retrying import retry
 
 import aeon.nxos as nxos
 import aeon.nxos.exceptions as NxosExc
@@ -207,6 +208,7 @@ def do_guestshell(cli, dev):
     def do_gs_destroy():
         dev.guestshell.destroy()
 
+    @retry(wait_fixed=10000, stop_max_attempt_number=3)
     def do_gs_enable():
         if cli.args.wipe is True:
             dev.guestshell.destroy()
