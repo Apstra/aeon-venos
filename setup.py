@@ -22,7 +22,7 @@ packages = find_packages(libdir)
 
 setup(
     name="aeon-venos",
-    version="0.8.0",
+    version="0.8.1",
     author="Jeremy Schulman",
     url='https://github.com/Apstra/aeon-venos',
     author_email="jeremy@apstra.com",
@@ -35,7 +35,8 @@ setup(
         "eos": ["pyeapi"],
         "nxos": ["lxml", "requests"],
         "cumulus": ["paramiko<2.0.0"],
-        "ubuntu": ["paramiko<2.0.0"]
+        "ubuntu": ["paramiko<2.0.0"],
+        "centos": ["paramiko<2.0.0"]
     },
     scripts=glob('bin/*'),
     classifiers=[
