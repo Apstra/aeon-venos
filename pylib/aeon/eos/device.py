@@ -40,8 +40,12 @@ class Device(BaseDevice):
 
         facts['virtual'] = bool('vEOS' == facts['hw_model'])
 
-        facts['serial_number'] = got_ver['systemMacAddress'].replace(':', '').upper() \
-            if facts['virtual'] else got_ver['serialNumber']
+        if facts['virtual']:
+            got_ma1 = self.api.execute('show interfaces ma1')
+            macaddr = got_ma1['interfaces']['Management1']['physicalAddress']
+            facts['serial_number'] = macaddr.replace(':', '').upper()
+        else:
+            facts['serial_number'] = got_ver['serialNumber']
 
         try:
             got_host = self.api.execute('show hostname')
