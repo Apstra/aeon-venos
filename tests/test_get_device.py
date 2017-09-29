@@ -16,6 +16,7 @@ def test_get_device_login(mock_pxssh):
     mock_pxssh.return_value.login.assert_called_with(dev_info['target'],
                                                      dev_info['user'],
                                                      auto_prompt_reset=False,
+                                                     login_timeout=10,
                                                      password=dev_info['passwd'])
 
 @patch('pylib.aeon.utils.pexpect.pxssh.pxssh')
