@@ -37,3 +37,10 @@ dev.facts
 'virtual': True, 'hw_model': u'vEOS', 'hw_version': u'', 'hw_part_version': None, 'hostname': u'localhost'}
 
 ```
+
+**Get NOS name only**
+```python
+from aeon.utils import get_device
+get_device('10.0.0.100', user='user', passwd='passwd', nos_only=True)
+'eos'
+```

@@ -8,10 +8,13 @@ from aeon.utils import get_device
 dev_info = {'target': '1.1.1.1',
        'user': 'test_user',
        'passwd': 'test_passwd'}
+nos_only_params = [True, False]
 
 
+@patch('pylib.aeon.utils.aeon.nxos.device.Device')
 @patch('pylib.aeon.utils.pexpect.pxssh.pxssh')
-def test_get_device_login(mock_pxssh):
+def test_get_device_login(mock_pxssh, mock_nxos_device):
+    mock_pxssh.return_value.expect.return_value = 0
     get_device(target=dev_info['target'], user=dev_info['user'], passwd=dev_info['passwd'])
     mock_pxssh.return_value.login.assert_called_with(dev_info['target'],
                                                      dev_info['user'],
@@ -19,8 +22,11 @@ def test_get_device_login(mock_pxssh):
                                                      login_timeout=10,
                                                      password=dev_info['passwd'])
 
+
+@patch('pylib.aeon.utils.aeon.cumulus.device.Device')
 @patch('pylib.aeon.utils.pexpect.pxssh.pxssh')
-def test_get_device_sendline(mock_pxssh):
+def test_get_device_sendline(mock_pxssh, mock_nxos_device):
+    mock_pxssh.return_value.expect.side_effect = [2, 0]
     get_device(target=dev_info['target'], user=dev_info['user'], passwd=dev_info['passwd'])
     calls = [call('show version'), call('cat /proc/version')]
     mock_pxssh.return_value.sendline.assert_has_calls(calls)
@@ -32,9 +38,23 @@ def test_get_device_nxos(mock_pxssh, mock_nxos_device):
     device_name = 'nxos_device'
     mock_pxssh.return_value.expect.return_value = 0
     mock_nxos_device.return_value = device_name
-    dev = get_device(target=dev_info['target'], user=dev_info['user'], passwd=dev_info['passwd'])
+    dev = get_device(target=dev_info['target'],
+                     user=dev_info['user'],
+                     passwd=dev_info['passwd'])
     assert dev == device_name
 
+
+@patch('pylib.aeon.utils.aeon.nxos.device.Device')
+@patch('pylib.aeon.utils.pexpect.pxssh.pxssh')
+def test_get_device_nos_only(mock_pxssh, mock_nxos_device):
+    device_name = 'nxos'
+    mock_pxssh.return_value.expect.return_value = 0
+    mock_nxos_device.return_value = device_name
+    dev = get_device(target=dev_info['target'],
+                     user=dev_info['user'],
+                     passwd=dev_info['passwd'],
+                     nos_only=True)
+    assert dev == device_name
 
 @patch('pylib.aeon.utils.aeon.eos.device.Device')
 @patch('pylib.aeon.utils.pexpect.pxssh.pxssh')
