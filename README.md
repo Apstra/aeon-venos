@@ -10,6 +10,12 @@ AEON-VENOS's primary purpose:
  - Provide a communications channel to push and pull information from those devices.
 
 
+## Installation
+You *MUST* specify extras in order to get the requirements needed to use aeon-venos with your device type. For example:
+```
+pip install aeon-venos[nxos,eos,cumulus]
+```
+
 ## Usage
 ```python
 from aeon.eos.device import Device
