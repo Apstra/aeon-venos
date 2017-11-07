@@ -108,5 +108,6 @@ def test_get_device_target_error(mock_pxssh):
 def test_get_device_exception(mock_pxssh):
     exception_msg = 'Test Exception Message'
     mock_pxssh.return_value.login.side_effect = ExceptionPxssh(exception_msg)
-    dev = get_device(target=dev_info['target'], user=dev_info['user'], passwd=dev_info['passwd'])
-    assert dev == 'Error logging in: %s' % exception_msg
+    with pytest.raises(TargetError) as e:
+        dev = get_device(target=dev_info['target'], user=dev_info['user'], passwd=dev_info['passwd'])
+        assert e.message('Error logging in: %s' % dev_info['target'])
