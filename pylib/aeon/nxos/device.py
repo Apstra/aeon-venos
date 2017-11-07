@@ -43,7 +43,7 @@ class Device(BaseDevice):
         while attempts < 5:
             try:
                 got = exec_show('show hardware')
-            except:
+            except:  # NOQA
                 attempts -= 1
             else:
                 break
