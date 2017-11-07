@@ -33,7 +33,7 @@ class _install_os(object):
         try:
             got = run(cmd)
             return got.get('file_content_md5sum').strip()
-        except:
+        except:  # NOQA
             return None
 
     @property
@@ -43,7 +43,7 @@ class _install_os(object):
         try:
             got = run(cmd, msg_type='bash')
             return int(got[3])
-        except:
+        except:  # NOQA
             # @@@ TO-DO: need to handle this properly
             raise
 

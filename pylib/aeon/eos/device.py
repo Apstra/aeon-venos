@@ -51,6 +51,6 @@ class Device(BaseDevice):
             got_host = self.api.execute('show hostname')
             facts['fqdn'] = got_host.get('fqdn')
             facts['hostname'] = got_host.get('hostname')
-        except:
+        except:  # NOQA
             facts['fqdn'] = 'localhost'
             facts['hostname'] = 'localhost'

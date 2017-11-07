@@ -57,7 +57,7 @@ class BaseDevice(object):
                 s.close()
                 elapsed = datetime.datetime.now() - start
                 return True, elapsed
-            except:
+            except:  # NOQA
                 time.sleep(interval)
                 pass
         # Raise ProbeError if unable to reach in time allotted
