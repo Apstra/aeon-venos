@@ -58,7 +58,7 @@ def get_device(target=None, user='admin', passwd='admin', nos_only=False):
                 raise TargetError('Unable to determine device type for %s' % target)
 
     except pxssh.ExceptionPxssh as e:
-        return "Error logging in: %s" % e
+        raise TargetError("Error logging in: %s" % e)
 
     finally:
         session.close()
