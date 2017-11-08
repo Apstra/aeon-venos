@@ -34,6 +34,7 @@ class Device(BaseDevice):
         exec_show = partial(self.api.exec_opcmd, resp_fmt='json')
 
         facts = self.facts
+        facts['os_name'] = self.OS_NAME
 
         got = exec_show('show hostname')
         facts['fqdn'] = got['hostname']
