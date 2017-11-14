@@ -3,6 +3,9 @@
 # This source code is licensed under End User License Agreement found in the
 # LICENSE file at http://www.apstra.com/community/eula
 
+import socket
+
+import paramiko
 import pexpect
 from pexpect import pxssh
 
@@ -31,13 +34,25 @@ def get_device(target=None, user='admin', passwd='admin', nos_only=False):
         'centos': aeon.centos.device.Device
     }
     try:
+        # Use paramiko to check if device is reachable because pxssh is bad at that.
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(target, username=user, password=passwd, timeout=5)
+        ssh.close()
+    except socket.error:
+        raise TargetError('Device unreachable: %s' % target)
+    except paramiko.AuthenticationException:
+        raise TargetError('Authentication error: %s' % target)
+    except paramiko.SSHException:
+        raise TargetError('Error logging in: %s' % target)
+
+    try:
         nos = ''
         session = pxssh.pxssh(timeout=10, options={'StrictHostKeyChecking': "no",
                                        'UserKnownHostsFile': "/dev/null"})
         session.force_password = True
         session.PROMPT = '\r\n.*#|\r\n.*$'
         session.login(target, user, password=passwd, auto_prompt_reset=False, login_timeout=10)
-
         session.sendline('show version')
         i = session.expect(['Cisco', 'Arista', 'command not found', 'not installed', pexpect.TIMEOUT], timeout=10)
         if i == 0:
@@ -54,8 +69,8 @@ def get_device(target=None, user='admin', passwd='admin', nos_only=False):
                 nos = 'ubuntu'
             if i == 2:
                 nos = 'centos'
-            if i == 3:
-                raise TargetError('Unable to determine device type for %s' % target)
+        if i == 4:
+            raise TargetError('Unable to determine device type for %s' % target)
 
     except pxssh.ExceptionPxssh as e:
         raise TargetError("Error logging in to {target} : {error}".format(target=target, error=e))
