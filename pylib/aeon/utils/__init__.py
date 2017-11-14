@@ -69,8 +69,8 @@ def get_device(target=None, user='admin', passwd='admin', nos_only=False):
                 nos = 'ubuntu'
             if i == 2:
                 nos = 'centos'
-            if i == 3:
-                raise TargetError('Unable to determine device type for %s' % target)
+        if i == 4:
+            raise TargetError('Unable to determine device type for %s' % target)
 
     except pxssh.ExceptionPxssh as e:
         raise TargetError("Error logging in to {target} : {error}".format(target=target, error=e))
