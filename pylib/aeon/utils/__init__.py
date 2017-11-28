@@ -72,12 +72,10 @@ def get_device(target=None, user='admin', passwd='admin', nos_only=False):
             if i == 3:
                 session.sendline('[ -f /etc/opx/opx-environment.sh ] && echo "device is OPX" || echo "Not found"')
                 i = session.expect(['Not found', 'device is OPX', pexpect.TIMEOUT], timeout=5)
-                if i == 0:
+                if i == 0 or i == 2:
                     raise TargetError('Unable to determine device type for %s' % target)
                 if i == 1:
                     nos = 'opx'
-                if i == 2:
-                    raise TargetError('Unable to determine device type for %s' % target)
         if i == 4:
             raise TargetError('Unable to determine device type for %s' % target)
 
