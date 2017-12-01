@@ -82,7 +82,7 @@ class _install_os(object):
         :param timeout: time/seconds to perform the install action
         """
 
-        cmd = 'install all nxos {dir}:{bin}'.format(
+        cmd = 'terminal dont-ask ; install all nxos {dir}:{bin}'.format(
             dir=self.DESTDIR, bin=self.image)
 
         run = self.device.api.exec_opcmd
