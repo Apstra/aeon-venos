@@ -82,8 +82,12 @@ class _install_os(object):
         :param timeout: time/seconds to perform the install action
         """
 
-        cmd = 'terminal dont-ask ; install all nxos {dir}:{bin}'.format(
+        cmd = 'install all nxos {dir}:{bin}'.format(
             dir=self.DESTDIR, bin=self.image)
 
+        # Don't prompt when upgrading
+        self.device.api.exec_opcmd('terminal dont-ask',
+                                   msg_type='cli_show_ascii',
+                                   timeout=timeout)
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
