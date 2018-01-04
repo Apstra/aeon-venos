@@ -34,9 +34,9 @@ setup(
     extras_require={
         "eos": ["pyeapi", "pexpect==4.2.1"],
         "nxos": ["lxml", "requests", "pexpect==4.2.1"],
-        "cumulus": ["paramiko<2.0.0", "pexpect==4.2.1"],
-        "ubuntu": ["paramiko<2.0.0", "pexpect==4.2.1"],
-        "centos": ["paramiko<2.0.0", "pexpect==4.2.1"]
+        "cumulus": ["paramiko>2.0.0", "pexpect==4.2.1"],
+        "ubuntu": ["paramiko>2.0.0", "pexpect==4.2.1"],
+        "centos": ["paramiko>2.0.0", "pexpect==4.2.1"]
     },
     scripts=glob('bin/*'),
     classifiers=[
