@@ -1,3 +1,4 @@
+# WARNING: Requirements also specified in setup.py!
 requests
 lxml
 pyeapi
