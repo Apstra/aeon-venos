@@ -1,5 +1,5 @@
 requests
 lxml
 pyeapi
-paramiko
+paramiko>2.0.0
 pexpect==4.2.1
