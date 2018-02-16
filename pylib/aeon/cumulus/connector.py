@@ -18,8 +18,8 @@ class Connector(object):
         self.hostname = hostname
         self.proto = kwargs.get('proto') or self.DEFAULT_PROTOCOL
         self.port = kwargs.get('port') or socket.getservbyname('ssh')
-        self.user = kwargs.get('user')
-        self.passwd = kwargs.get('passwd')
+        self.user = kwargs.get('user', 'admin')
+        self.passwd = kwargs.get('passwd', 'admin')
 
         self._client = paramiko.SSHClient()
         self._client.load_system_host_keys()

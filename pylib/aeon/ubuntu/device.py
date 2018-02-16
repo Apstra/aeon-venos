@@ -22,8 +22,8 @@ class Device(BaseDevice):
         """
         BaseDevice.__init__(self, target, Connector, **kwargs)
 
-    def get_mac_address(self, link_name):
-        good, got = self.api.execute(['ip link show dev %s' % link_name])
+    def get_mac_address(self):
+        good, got = self.api.execute(['ip link show'])
         data = got[0]['stdout']
         macaddr = data.partition('link/ether ')[-1].split()[0]
         return macaddr.upper()
@@ -44,7 +44,7 @@ class Device(BaseDevice):
         facts['virtual'] = None
         facts['vendor'] = 'Canonical'
         facts['serial_number'] = None
-        facts['mac_address'] = self.get_mac_address("eth0")
+        facts['mac_address'] = self.get_mac_address()
         facts['hw_model'] = 'Server'
         facts['hw_part_number'] = None
         facts['hw_version'] = None
