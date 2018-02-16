@@ -19,9 +19,11 @@ g_facts = {
     'service_tag': None
 }
 
-ip_link_show_dev_eth0_out = '''
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast master mgmt state UP mode DEFAULT group default qlen 1000
-    link/ether 01:23:45:67:89:0a brd ff:ff:ff:ff:ff:ff
+ip_link_show_out = '''
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: ens3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000
+    link/ether 01:23:45:67:89:0A brd ff:ff:ff:ff:ff:ff
 '''
 
 hostname_out = "ubuntu"
@@ -53,8 +55,8 @@ def ubuntu_device(mock_connector, mock_probe, request):
             # hostname
             elif arg == 'hostname':
                 results.append({'stdout': hostname_out})
-            elif arg =='ip link show dev eth0':
-                results.append({'stdout': ip_link_show_dev_eth0_out})
+            elif arg =='ip link show':
+                results.append({'stdout': ip_link_show_out})
         return True, results
     mock_connector.return_value.execute.side_effect = mock_execute
     mock_probe.return_value = True, 10
