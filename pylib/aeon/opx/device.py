@@ -11,7 +11,7 @@ __all__ = ['Device']
 
 
 class Device(BaseDevice):
-    OS_NAME = 'OPX'
+    OS_NAME = 'opx'
 
     def __init__(self, target, **kwargs):
         """
@@ -43,7 +43,7 @@ class Device(BaseDevice):
         facts['hostname'] = facts['fqdn']
         facts['os_version'] = got[1]['stdout'].strip()
         facts['virtual'] = bool('vm' in got[2]['stdout'].lower())
-        facts['vendor'] = 'OPX'
+        facts['vendor'] = 'opx'
         facts['serial_number'] = self.get_mac_address().replace(':', '')
         facts['mac_address'] = self.get_mac_address()
         facts['hw_model'] = got[2]['stdout'].strip()
