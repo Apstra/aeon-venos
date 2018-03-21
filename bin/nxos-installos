@@ -11,9 +11,10 @@ import json
 import argparse
 import logging
 import logging.handlers
+import tenacity
 
 import aeon.nxos as nxos
-from aeon.nxos.exceptions import NxosException
+from aeon.nxos.exceptions import NxosException, ProbeError, CommandError
 from aeon.exceptions import ProbeError, UnauthorizedError
 
 _OS_NAME = 'nxos'
@@ -209,10 +210,23 @@ def start(dev):
     # -----------------------------------------------------------------
 
     g_log.info('running installation process ... please be patient')
+
     try:
-        dev.install_os.run()
-    except NxosException:
-        msg = 'failed to install properly'
+        # Retry if CommandError
+        @tenacity.retry(retry=tenacity.retry_if_exception_type(CommandError),
+                        before=g_log.info('Waiting for system ready. Will retry for 10min.'),
+                        wait=tenacity.wait_fixed(30),
+                        stop=tenacity.stop_after_delay(10 * 60),
+                        reraise=True)
+        def run_installer():
+            dev.install_os.run()
+
+        g_log.info('Trying to install')
+        run_installer()
+
+    except NxosException as e:
+        g_log.error(e.message)
+        msg = 'failed to install properly: {}'.format(e.message)
         g_log.error(msg)
         exit_results(dict(
             ok=False,

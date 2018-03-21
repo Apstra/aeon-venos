@@ -5,6 +5,15 @@
 
 __all__ = ['_install_os']
 
+import tenacity
+from aeon.exceptions import CommandError
+
+
+def retry_if_command_error(exception):
+    """Return True if we should retry in event of CommandError, False otherwise.
+    CommandError usually means that the switch isn't fully online yet.
+    """
+    return isinstance(exception, CommandError)
 
 class _install_os(object):
     DESTDIR = 'bootflash'
@@ -81,13 +90,8 @@ class _install_os(object):
         cause the device to reboot.
         :param timeout: time/seconds to perform the install action
         """
-
-        cmd = 'install all nxos {dir}:{bin}'.format(
+        cmd = 'install all nxos {dir}:{bin} non-interruptive'.format(
             dir=self.DESTDIR, bin=self.image)
 
-        # Don't prompt when upgrading
-        self.device.api.exec_opcmd('terminal dont-ask',
-                                   msg_type='cli_show_ascii',
-                                   timeout=timeout)
         run = self.device.api.exec_opcmd
         run(cmd, msg_type='cli_show_ascii', timeout=timeout)
