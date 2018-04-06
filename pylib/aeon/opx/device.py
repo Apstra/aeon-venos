@@ -35,8 +35,8 @@ class Device(BaseDevice):
 
         good, got = self.api.execute([
             'hostname',
-            """grep -oP '^OS_VERSION="\K.*\d' /etc/OPX-release-version""",
-            """grep -oP '^PLATFORM="\K.*\w' /etc/OPX-release-version"""
+            """grep -oP '^OS_VERSION=[\"]?\K.*\d' /etc/OPX-release-version""",
+            """grep -oP '^PLATFORM=[\"]?\K.*\w' /etc/OPX-release-version"""
         ])
 
         facts['fqdn'] = got[0]['stdout'].strip()
