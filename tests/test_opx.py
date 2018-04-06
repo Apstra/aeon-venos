@@ -51,10 +51,10 @@ def opx_device(mock_connector, mock_probe, request):
         results = []
         for arg in args:
             # os_version
-            if arg == """grep -oP '^OS_VERSION="\K.*\d' /etc/OPX-release-version""":
+            if arg == """grep -oP '^OS_VERSION=[\"]?\K.*\d' /etc/OPX-release-version""":
                 results.append({'stdout': grep_version_out})
             # platform
-            if arg == """grep -oP '^PLATFORM="\K.*\w' /etc/OPX-release-version""":
+            if arg == """grep -oP '^PLATFORM=[\"]?\K.*\w' /etc/OPX-release-version""":
                 results.append({'stdout': grep_platform_out})
             # hostname
             elif arg == 'hostname':
