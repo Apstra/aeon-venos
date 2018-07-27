@@ -41,7 +41,8 @@ class Connector(object):
         else:
             self.eapi = pyeapi.connect(
                 transport=self.proto, host=self.hostname,
-                username=self.user, password=self.passwd)
+                username=self.user, password=self.passwd,
+                timeout=120)
 
     def execute(self, commands, encoding='json'):
 
