@@ -42,7 +42,7 @@ class Connector(object):
             self.eapi = pyeapi.connect(
                 transport=self.proto, host=self.hostname,
                 username=self.user, password=self.passwd,
-                timeout=120)
+                timeout=240)
 
     def execute(self, commands, encoding='json'):
 
@@ -71,7 +71,8 @@ class Connector(object):
         if not isinstance(contents, list):
             raise RuntimeError('contents must be a list, for now')
 
-        contents = ['enable', 'configure'] + filter(bool, contents)   # filters out empty lines
+        # filters out empty lines
+        contents = ['enable', 'configure'] + list(filter(bool, contents))
 
         try:
             self.eapi.execute(contents)

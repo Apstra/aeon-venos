@@ -158,6 +158,6 @@ def test_eos_connector_configure(mock_eapi):
 
     con = connector.Connector(target, user=user, passwd=passwd)
     con.configure(['test1', 'test2', ''])
-    expected = [mock.call(host=target, password=passwd, transport='http', username=user, timeout=120),
+    expected = [mock.call(host=target, password=passwd, transport='http', username=user, timeout=240),
                 mock.call().execute(['enable', 'configure', 'test1', 'test2'])]
     assert mock_eapi.mock_calls == expected
